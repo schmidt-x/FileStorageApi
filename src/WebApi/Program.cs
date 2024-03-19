@@ -1,6 +1,7 @@
-using FileStorageApi.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
+using FileStorageApi.Application;
+using Serilog;
 
 namespace FileStorageApi.WebApi;
 
@@ -11,11 +12,13 @@ public class Program
 		WebApplicationBuilder builder = WebApplication.CreateBuilder();
 		
 		builder.Services
-			.AddApplicationServices()
+			.AddApplicationServices(builder.Configuration)
 			.AddWebApiServices();
 		
 		WebApplication app = builder.Build();
 
+		app.UseSerilogRequestLogging();
+		
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
