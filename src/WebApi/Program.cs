@@ -1,9 +1,10 @@
+using FileStorageApi.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
-using FileStorageApi.Application;
+using WebApi.Infrastructure;
 using Serilog;
 
-namespace FileStorageApi.WebApi;
+namespace WebApi;
 
 public class Program
 {
@@ -22,8 +23,13 @@ public class Program
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
-			app.UseSwaggerUI();
+			app.UseSwaggerUI(options =>
+			{
+				options.SwaggerEndpoint("/swagger/v1/swagger.json", "FileStorageApi v1");
+			});
 		}
+		
+		app.MapEndpoints();
 		
 		app.Run();
 	}

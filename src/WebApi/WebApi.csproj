@@ -7,12 +7,6 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 	
-	<PropertyGroup>
-		<RootNamespace>FileStorageApi.WebApi</RootNamespace>
-		<AssemblyName>FileStorageApi.WebApi</AssemblyName>
-	</PropertyGroup>
-
-	
 	<ItemGroup>
 		<ProjectReference Include="..\Application\Application.csproj"/>
 	</ItemGroup>
