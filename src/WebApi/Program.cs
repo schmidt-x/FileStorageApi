@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using WebApi.Infrastructure;
-using System;
+using Serilog;
 using App;
 
 namespace WebApi;
@@ -14,10 +13,12 @@ class Program
 		var builder = WebApplication.CreateBuilder();
 		
 		builder.Services
-			.AddAppServices()
+			.AddAppServices(builder.Configuration)
 			.AddWebApiServices();
 		
 		var app = builder.Build();
+		
+		app.UseSerilogRequestLogging();
 		
 		if (app.Environment.IsDevelopment())
 		{
