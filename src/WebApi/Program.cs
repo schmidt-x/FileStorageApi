@@ -1,4 +1,9 @@
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using WebApi.Infrastructure;
+using System;
+using App;
 
 namespace WebApi;
 
@@ -8,9 +13,19 @@ class Program
 	{
 		var builder = WebApplication.CreateBuilder();
 		
+		builder.Services
+			.AddAppServices()
+			.AddWebApiServices();
+		
 		var app = builder.Build();
 		
-		app.MapGet("/", () => "Hello, World!");
+		if (app.Environment.IsDevelopment())
+		{
+			app.UseSwagger();
+			app.UseSwaggerUI();
+		}
+		
+		app.MapEndpoints();
 		
 		app.Run();
 	}
