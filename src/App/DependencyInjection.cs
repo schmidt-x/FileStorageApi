@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using FluentMigrator.Runner;
+using System.Reflection;
 using App.Options;
 using Serilog;
 
@@ -22,6 +25,15 @@ public static class DependencyInjection
 			.BindConfiguration(ConnectionStringsOptions.ConnectionStrings)
 			.Validate(o => !string.IsNullOrWhiteSpace(o.Postgres), "Connection string is required.")
 			.ValidateOnStart();
+		
+		// Adding FluentMigrator.
+		services
+			.AddFluentMigratorCore()
+			.ConfigureRunner(rb => rb
+				.AddPostgres()
+				.WithGlobalConnectionString(sp => sp.GetRequiredService<IOptions<ConnectionStringsOptions>>().Value.Postgres)
+				.ScanIn(Assembly.GetExecutingAssembly()).For.Migrations())
+			.AddLogging(lb => lb.AddFluentMigratorConsole());
 		
 		
 		return services;

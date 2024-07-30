@@ -18,6 +18,8 @@ class Program
 		
 		var app = builder.Build();
 		
+		app.RunMigrations();
+		
 		app.UseSerilogRequestLogging();
 		
 		if (app.Environment.IsDevelopment())
