@@ -22,11 +22,16 @@ class Program
 		
 		app.UseSerilogRequestLogging();
 		
+		app.UseHttpsRedirection();
+		
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}
+		
+		app.UseAuthentication();
+		app.UseAuthorization();
 		
 		app.MapEndpoints();
 		
