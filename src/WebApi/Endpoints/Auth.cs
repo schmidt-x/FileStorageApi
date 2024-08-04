@@ -35,7 +35,7 @@ public class Auth : EndpointGroupBase
 		{
 			return Results.BadRequest(ex is ValidationException validationEx
 				? new FailResponse(validationEx.Errors)
-				: new FailResponse("error", ex.Message));
+				: new FailResponse("auth", ex.Message));
 		}
 		
 		var ctx = ctxAccessor.HttpContext!;
@@ -49,7 +49,34 @@ public class Auth : EndpointGroupBase
 		return Results.Created();
 	}	
 	
-	
+	public async Task<IResult> LoginAsync(
+		[FromForm] string login,
+		[FromForm] string password,
+		LoginUser handler,
+		IHttpContextAccessor ctxAccessor,
+		CancellationToken ct)
+	{
+		var command = new LoginUserCommand(login, password);
+		
+		Result<IEnumerable<Claim>> result = await handler.Handle(command, ct);
+		
+		if (result.IsError(out Exception? ex))
+		{
+			return Results.BadRequest(ex is ValidationException validationEx
+				? new FailResponse(validationEx.Errors)
+				: new FailResponse("auth", ex.Message));
+		}
+		
+		var ctx = ctxAccessor.HttpContext!;
+		var claims = result.Value;
+		
+		await ctx.SignInAsync(
+			CookieAuthenticationDefaults.AuthenticationScheme,
+			claims.ToPrincipal(CookieAuthenticationDefaults.AuthenticationScheme),
+			new AuthenticationProperties { IsPersistent = true });
+		
+		return Results.NoContent();
+	}
 	
 	public override void Map(WebApplication app)
 	{
@@ -63,5 +90,10 @@ public class Auth : EndpointGroupBase
 			.Produces(StatusCodes.Status201Created)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
 		
+		auth
+			.MapPost("/login", LoginAsync)
+			.Produces(StatusCodes.Status204NoContent)
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
+			
 	}
 }

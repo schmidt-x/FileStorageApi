@@ -6,6 +6,7 @@ using FluentValidation;
 using App.Services;
 using App.Data;
 using System;
+using Dapper;
 
 namespace App;
 
@@ -24,6 +25,8 @@ public static class DependencyInjection
 			.AddNpgsql()
 			.AddSingleton<IPasswordHasher, PasswordHasher>()
 			.AddScoped<IRepositoryService, RepositoryService>();
+		
+		DefaultTypeMap.MatchNamesWithUnderscores = true;
 		
 		return services;
 	}
