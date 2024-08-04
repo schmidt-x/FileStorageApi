@@ -12,6 +12,8 @@ public static class DependencyInjection
 		services.AddCookieAuthentication();
 		services.AddAuthorization();
 		
+		services.AddHttpContextAccessor();
+		
 		return services;
 	}
 }

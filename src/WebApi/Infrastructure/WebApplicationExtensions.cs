@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using FluentMigrator.Runner;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+using FluentMigrator.Runner;
+using System.Reflection;
+using System.Linq;
+using System;
 
 namespace WebApi.Infrastructure;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace App.Common;
 
@@ -43,7 +44,7 @@ public readonly struct Result<T>
 		? _error 
 		: throw new Exception("Attempt to access Error when State == Ok");
 	
-	public bool IsError(out Exception error)
+	public bool IsError([MaybeNullWhen(false)] out Exception error)
 	{
 		if (State == ResultState.Err)
 		{
@@ -55,7 +56,7 @@ public readonly struct Result<T>
 		return false;
 	}
 	
-	public bool IsOk(out T value)
+	public bool IsOk([MaybeNullWhen(false)] out T value)
 	{
 		if (State == ResultState.Ok)
 		{
