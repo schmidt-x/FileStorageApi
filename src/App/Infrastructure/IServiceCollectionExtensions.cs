@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using App.Options.Validation;
 using FluentMigrator.Runner;
 using System.Reflection;
 using System.Linq;
@@ -19,6 +20,17 @@ public static class IServiceCollectionExtensions
 			.BindConfiguration(ConnectionStringsOptions.ConnectionStrings)
 			.Validate(o => !string.IsNullOrWhiteSpace(o.Postgres), "Connection string is required.")
 			.ValidateOnStart();
+		
+		return services;
+	}
+	
+	public static IServiceCollection AddStorageOptions(this IServiceCollection services)
+	{
+		services
+			.AddOptions<StorageOptions>()
+			.BindConfiguration(StorageOptions.Storage);
+		
+		services.AddSingleton<IValidateOptions<StorageOptions>, StorageOptionsValidator>();
 		
 		return services;
 	}

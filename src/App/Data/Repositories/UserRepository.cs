@@ -21,4 +21,21 @@ internal class UserRepository : RepositoryBase, IUserRepository
 		
 		await Connection.ExecuteAsync(new CommandDefinition(query, user, Transaction, cancellationToken: ct));
 	}
+	
+	public async Task<bool> EmailExists(string emailAddress, CancellationToken ct)
+	{
+		const string query = "SELECT EXISTS (SELECT 1 FROM \"user\" WHERE email = @emailAddress)";
+		
+		return await Connection.ExecuteScalarAsync<bool>(
+			new CommandDefinition(query, new { emailAddress }, Transaction, cancellationToken: ct));
+	}
+	
+	public async Task<bool> UsernameExists(string username, CancellationToken ct)
+	{
+		const string query = "SELECT EXISTS (SELECT 1 FROM \"user\" WHERE username = @username)";
+		
+		return await Connection.ExecuteScalarAsync<bool>(
+			new CommandDefinition(query, new { username }, Transaction, cancellationToken: ct));
+	}
+
 }
