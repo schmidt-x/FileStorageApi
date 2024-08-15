@@ -1,7 +1,8 @@
-﻿using FileStorageApi.Features.Auth.Commands;
+﻿using FileStorageApi.Features.Auth.Helpers;
+
 using FluentValidation;
 
-namespace FileStorageApi.Features.Auth.Validation;
+namespace FileStorageApi.Features.Auth.Commands.LoginUser;
 
 public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {
@@ -14,7 +15,7 @@ public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 			.MinimumLength(8)
 			.Custom((password, context) =>
 			{
-				if (Helpers.ValidatePassword(password).Length != 0)
+				if (PasswordValidator.Validate(password).Length != 0)
 				{
 					context.AddFailure("Fail");
 				}

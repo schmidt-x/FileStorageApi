@@ -1,8 +1,8 @@
-﻿namespace FileStorageApi.Features.Auth.Validation;
+﻿namespace FileStorageApi.Features.Auth.Helpers;
 
-public static class Helpers
+public static class PasswordValidator
 {
-	public static string[] ValidatePassword(string password)
+	public static string[] Validate(string password)
 	{
 		bool hasLower = false;
 		bool hasUpper = false;
@@ -62,5 +62,4 @@ public static class Helpers
 		
 		return failures;
 	}
-
 }

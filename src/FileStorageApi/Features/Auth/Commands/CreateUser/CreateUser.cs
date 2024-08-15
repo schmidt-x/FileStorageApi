@@ -15,7 +15,7 @@ using Serilog;
 using System;
 using FluentValidation;
 
-namespace FileStorageApi.Features.Auth.Commands;
+namespace FileStorageApi.Features.Auth.Commands.CreateUser;
 
 public record CreateUserCommand(string Email, string Username, string Password);
 

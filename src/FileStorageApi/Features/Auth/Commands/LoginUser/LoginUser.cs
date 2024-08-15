@@ -10,7 +10,7 @@ using FileStorageApi.Data;
 using FileStorageApi.Common;
 using Serilog;
 
-namespace FileStorageApi.Features.Auth.Commands;
+namespace FileStorageApi.Features.Auth.Commands.LoginUser;
 
 public record LoginUserCommand(string Login, string Password);
 

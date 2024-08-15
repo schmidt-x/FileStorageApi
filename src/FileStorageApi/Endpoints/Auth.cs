@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using FileStorageApi.Features.Auth.Commands;
+using FileStorageApi.Features.Auth.Commands.CreateUser;
+using FileStorageApi.Features.Auth.Commands.LoginUser;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
