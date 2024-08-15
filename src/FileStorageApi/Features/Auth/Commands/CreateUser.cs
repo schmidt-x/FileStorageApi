@@ -77,23 +77,37 @@ public class CreateUserHandler : RequestHandlerBase
 			FolderId = Guid.NewGuid()
 		};
 		
-		var userFolderIdStr = user.FolderId.ToString();
+		var folder = new Folder
+		{
+			Id = user.FolderId,
+			Name = "/",
+			Path = "",
+			Size = 0,
+			IsTrashed = false,
+			CreatedAt = timeNow,
+			ModifiedAt = timeNow,
+			ParentId = Guid.Empty,
+			UserId = user.Id
+		};
 		
-		var userStorageFolder = Path.Combine(_storageOpts.RootFolder, _storageOpts.StorageFolder, userFolderIdStr);
-		var userTrashFolder = Path.Combine(_storageOpts.RootFolder, _storageOpts.TrashFolder, userFolderIdStr);
+		var userStorageFolder = Path.Combine(_storageOpts.StorageFolder, user.FolderId.ToString());
 		
 		Directory.CreateDirectory(userStorageFolder);
-		Directory.CreateDirectory(userTrashFolder);
+		
+		await _db.BeginTransactionAsync(ct);
 		
 		try
 		{
 			await _db.Users.CreateUserAsync(user, ct);
+			await _db.Folders.CreateFolder(folder, ct);
+			await _db.SaveChangesAsync(ct);
 		}
 		catch
 		{
 			// TODO: log
+			await _db.UndoChangesAsync();
 			Directory.Delete(userStorageFolder);
-			Directory.Delete(userTrashFolder);
+			
 			throw;
 		}
 		

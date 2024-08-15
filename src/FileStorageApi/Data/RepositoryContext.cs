@@ -14,16 +14,20 @@ public class RepositoryContext : IRepositoryContext, IDisposable
 	
 	private IUserRepository? _userRepository;
 	private IFileRepository? _fileRepository;
+	private IFolderRepository? _folderRepository;
 	
 	public RepositoryContext(NpgsqlDataSource dataSource)
 	{
 		_connection = dataSource.CreateConnection();
 	}
 	
-	public IUserRepository Users 
+	public IUserRepository Users
 		=> _userRepository ??= new UserRepository(_connection, _transaction);
 	
-	public IFileRepository Files 
+	public IFolderRepository Folders
+		=> _folderRepository ??= new FolderRepository(_connection, _transaction);
+	
+	public IFileRepository Files
 		=> _fileRepository ??= new FileRepository(_connection, _transaction);
 	
 	public async Task BeginTransactionAsync(CancellationToken ct)
@@ -79,5 +83,6 @@ public class RepositoryContext : IRepositoryContext, IDisposable
 	{
 		_userRepository = null;
 		_fileRepository = null;
+		_folderRepository = null;
 	}
 }

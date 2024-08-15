@@ -8,6 +8,7 @@ public interface IRepositoryContext
 {
 	IUserRepository Users { get; }
 	IFileRepository Files { get; }
+	IFolderRepository Folders { get; }
 	
 	Task BeginTransactionAsync(CancellationToken ct);
 	Task SaveChangesAsync(CancellationToken ct);

@@ -22,7 +22,6 @@ public class LoginUser : RequestHandlerBase
 	private readonly ILogger _logger;
 	private readonly IAuthSchemeProvider _authSchemeProvider;
 	
-	
 	public LoginUser(
 		IValidator<LoginUserCommand> validator,
 		IRepositoryContext db,
@@ -36,6 +35,7 @@ public class LoginUser : RequestHandlerBase
 		_logger = logger;
 		_authSchemeProvider = authSchemeProvider;
 	}
+	
 	
 	public async Task<Result<ClaimsPrincipal>> Handle(LoginUserCommand request, CancellationToken ct)
 	{
