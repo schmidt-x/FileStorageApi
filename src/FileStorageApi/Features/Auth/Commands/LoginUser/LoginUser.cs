@@ -1,4 +1,4 @@
-﻿using ValidationException = FileStorageApi.Common.Exceptions.ValidationException;
+﻿using System.Security.Authentication;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using FileStorageApi.Features.Infrastructure;
@@ -43,14 +43,14 @@ public class LoginUser : RequestHandlerBase
 		
 		if (!validationResult.IsValid)
 		{
-			return new ValidationException("auth", ["Invalid credentials."]);
+			return new AuthenticationException();
 		}
 		
 		var user = await _db.Users.GetByEmail(request.Login, ct);
 		
 		if (user is null || !_passwordHasher.Verify(user.PasswordHash, request.Password))
 		{
-			return new ValidationException("auth", ["Invalid credentials."]);
+			return new AuthenticationException();
 		}
 		
 		_logger.Information("User {username} (Id: {id}) has logged in.", user.Username, user.Id);

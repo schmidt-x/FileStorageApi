@@ -13,12 +13,6 @@ public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 		RuleFor(x => x.Password)
 			.NotEmpty()
 			.MinimumLength(8)
-			.Custom((password, context) =>
-			{
-				if (PasswordValidator.Validate(password).Length != 0)
-				{
-					context.AddFailure("Fail");
-				}
-			}).When(x => !string.IsNullOrEmpty(x.Password), ApplyConditionTo.CurrentValidator);
+			.Must(password => PasswordValidator.Validate(password).Length == 0);
 	}
 }

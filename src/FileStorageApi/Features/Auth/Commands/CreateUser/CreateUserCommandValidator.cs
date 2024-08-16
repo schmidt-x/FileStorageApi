@@ -16,7 +16,7 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 			.NotEmpty().WithMessage("Username must not be empty.")
 			.MinimumLength(3).WithMessage("Username must not be shorter than 3 characters.")
 			.MaximumLength(32).WithMessage("Username must not be longer than 32 characters.")
-			.Matches("^[a-zA-Z0-9_.]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+			.Matches("^[a-zA-Z0-9_.]+$", RegexOptions.Compiled)
 				.WithMessage("Username can only contain letters, numbers, underscores, or periods.");
 		
 		RuleFor(u => u.Password)

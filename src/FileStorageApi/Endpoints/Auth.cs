@@ -13,6 +13,7 @@ using System.Threading;
 using FileStorageApi.Responses;
 using FileStorageApi.Common;
 using System;
+using System.Security.Authentication;
 
 namespace FileStorageApi.Endpoints;
 
@@ -34,7 +35,7 @@ public class Auth : EndpointGroupBase
 		{
 			return Results.BadRequest(ex is ValidationException validationEx
 				? new FailResponse(validationEx.Errors)
-				: new FailResponse("auth", ex.Message));
+				: new FailResponse("Error", ex.Message));
 		}
 		
 		var ctx = ctxAccessor.HttpContext!;
@@ -60,9 +61,9 @@ public class Auth : EndpointGroupBase
 		
 		if (result.IsError(out Exception? ex))
 		{
-			return Results.BadRequest(ex is ValidationException validationEx
-				? new FailResponse(validationEx.Errors)
-				: new FailResponse("auth", ex.Message));
+			return Results.BadRequest(ex is AuthenticationException
+				? new FailResponse("Auth", "Wrong Credentials.")
+				: new FailResponse("Error", ex.Message));
 		}
 		
 		var ctx = ctxAccessor.HttpContext!;
