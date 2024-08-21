@@ -24,7 +24,8 @@ public static class DependencyInjection
 		
 		services
 			.AddConnectionStringsOptions()
-			.AddStorageOptions();
+			.AddStorageOptions()
+			.AddAuthOptions();
 		
 		services.AddFluentMigrator();
 		services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

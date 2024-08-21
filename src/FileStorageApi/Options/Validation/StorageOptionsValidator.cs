@@ -14,11 +14,19 @@ public class StorageOptionsValidator : IValidateOptions<StorageOptions>
 			sb.Append("\nStorageFolder is required.");
 		}
 		
-		const long _20MB = 1024 * 1024 * 20;
-		
-		if (options.FileSizeLimit is < 1 or > _20MB)
+		if (options.FileSizeLimit < 1)
 		{
-			sb.Append("\nFile size value must be between 1 (1 byte) and 20971520 (20MB).");
+			sb.Append("\nFile size limit is less than 1 byte.");
+		}
+		
+		if (options.StorageSizeLimitPerUser < options.FileSizeLimit)
+		{
+			sb.Append("\nStorage size limit is less than File size limit.");
+		}
+		
+		if (options.FullPathMaxLength < options.PathSegmentMaxLength + options.FileNameMaxLength)
+		{
+			sb.Append("\nFull path max length is shorter than Folder + File names length.");
 		}
 		
 		return sb.Length != 0

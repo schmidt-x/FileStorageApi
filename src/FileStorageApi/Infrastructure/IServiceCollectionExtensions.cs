@@ -61,6 +61,12 @@ public static class IServiceCollectionExtensions
 		return services;
 	}
 	
+	public static IServiceCollection AddAuthOptions(this IServiceCollection services)
+	{
+		services.AddOptions<AuthOptions>().BindConfiguration(AuthOptions.Auth);
+		return services;
+	}
+	
 	public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration config)
 	{
 		Log.Logger = new LoggerConfiguration()
