@@ -1,7 +1,6 @@
 ﻿using FileStorageApi.Domain.Entities;
 using System.Threading.Tasks;
 using System.Threading;
-using System;
 using Dapper;
 using Npgsql;
 
@@ -16,8 +15,8 @@ internal class UserRepository : RepositoryBase, IUserRepository
 	public async Task CreateUserAsync(User user, CancellationToken ct)
 	{
 		const string query = """
-			INSERT INTO "user" (id, email, is_confirmed, username, password_hash, created_at, modified_at, folder_id)
-			VALUES (@id, @email, @isConfirmed, @username, @passwordHash, @createdAt, @modifiedAt, @folderId);
+			INSERT INTO users (id, email, is_confirmed, username, password_hash, created_at, modified_at, folder_id)
+			VALUES (@Id, @Email, @IsConfirmed, @Username, @PasswordHash, @CreatedAt, @ModifiedAt, @FolderId);
 			""";
 		
 		await Connection.ExecuteAsync(new CommandDefinition(query, user, Transaction, cancellationToken: ct));
@@ -25,7 +24,7 @@ internal class UserRepository : RepositoryBase, IUserRepository
 	
 	public async Task<bool> EmailExists(string emailAddress, CancellationToken ct)
 	{
-		const string query = "SELECT EXISTS (SELECT 1 FROM \"user\" WHERE email = @emailAddress)";
+		const string query = "SELECT EXISTS(SELECT 1 FROM users WHERE email = @EmailAddress)";
 		
 		return await Connection.ExecuteScalarAsync<bool>(
 			new CommandDefinition(query, new { emailAddress }, Transaction, cancellationToken: ct));
@@ -33,7 +32,7 @@ internal class UserRepository : RepositoryBase, IUserRepository
 	
 	public async Task<bool> UsernameExists(string username, CancellationToken ct)
 	{
-		const string query = "SELECT EXISTS (SELECT 1 FROM \"user\" WHERE username = @username)";
+		const string query = "SELECT EXISTS(SELECT 1 FROM users WHERE username = @Username)";
 		
 		return await Connection.ExecuteScalarAsync<bool>(
 			new CommandDefinition(query, new { username }, Transaction, cancellationToken: ct));
@@ -41,17 +40,12 @@ internal class UserRepository : RepositoryBase, IUserRepository
 
 	public async Task<User?> GetByEmail(string emailAddress, CancellationToken ct)
 	{
-		const string query = "SELECT * FROM \"user\" where email = @emailAddress;";
+		const string query = "SELECT * FROM users where email = @EmailAddress;";
 		
 		var user = await Connection.QuerySingleOrDefaultAsync<User>(
 			new CommandDefinition(query, new { emailAddress }, Transaction, cancellationToken: ct));
 		
 		return user;
-	}
-	
-	public Task<Guid> GetFolderId(Guid userId, CancellationToken ct)
-	{
-		throw new NotImplementedException();
 	}
 	
 }

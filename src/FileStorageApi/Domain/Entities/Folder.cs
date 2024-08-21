@@ -2,15 +2,16 @@
 
 namespace FileStorageApi.Domain.Entities;
 
-	public class Folder
+public class Folder
 {
-	public Guid Id { get; set; }
-	public string Name { get; set; } = default!;
-	public string Path { get; set; } = default!;
-	public long Size { get; set; }
-	public bool IsTrashed { get; set; }
-	public DateTimeOffset CreatedAt { get; set; }
-	public DateTimeOffset ModifiedAt { get; set; }
-	public Guid ParentId { get; set; }
-	public Guid UserId { get; set; }
+	public Guid Id { get; init; }
+	public string Name { get; init; } = default!;
+	public Guid PathId { get; init; }
+	public long Size { get; init; }
+	public bool IsTrashed { get; init; }
+	public DateTimeOffset CreatedAt { get; init; }
+	public DateTimeOffset ModifiedAt { get; init; }
+	public Guid ParentId { get; init; }
+	public Guid UserId { get; init; }
+	public FolderPath? FolderPath { get; init; }
 }

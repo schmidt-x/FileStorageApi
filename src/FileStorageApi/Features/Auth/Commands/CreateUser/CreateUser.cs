@@ -55,12 +55,12 @@ public class CreateUserHandler : RequestHandlerBase
 		
 		if (await _db.Users.EmailExists(request.Email, ct))
 		{
-			return new ValidationException("email", ["Email address is already taken."]);
+			return new ValidationException(nameof(request.Email), ["Email address is already taken."]);
 		}
 		
 		if (await _db.Users.UsernameExists(request.Username, ct))
 		{
-			return new ValidationException("username", ["Username is already taken."]);
+			return new ValidationException(nameof(request.Username), ["Username is already taken."]);
 		}
 		
 		var timeNow = DateTimeOffset.UtcNow;
@@ -77,21 +77,23 @@ public class CreateUserHandler : RequestHandlerBase
 			FolderId = Guid.NewGuid()
 		};
 		
+		var folderPath = new FolderPath(Guid.NewGuid(), "", user.Id);
+		
 		var folder = new Folder
 		{
 			Id = user.FolderId,
 			Name = "/",
-			Path = "",
+			PathId = folderPath.Id,
 			Size = 0,
 			IsTrashed = false,
 			CreatedAt = timeNow,
 			ModifiedAt = timeNow,
 			ParentId = Guid.Empty,
-			UserId = user.Id
+			UserId = user.Id,
+			FolderPath = folderPath
 		};
 		
 		var userStorageFolder = Path.Combine(_storageOpts.StorageFolder, user.FolderId.ToString());
-		
 		Directory.CreateDirectory(userStorageFolder);
 		
 		await _db.BeginTransactionAsync(ct);
@@ -99,17 +101,18 @@ public class CreateUserHandler : RequestHandlerBase
 		try
 		{
 			await _db.Users.CreateUserAsync(user, ct);
-			await _db.Folders.CreateFolder(folder, ct);
-			await _db.SaveChangesAsync(ct);
+			await _db.Folders.CreateFolderAsync(folder, ct);
 		}
-		catch
+		catch (Exception ex)
 		{
-			// TODO: log
 			await _db.UndoChangesAsync();
 			Directory.Delete(userStorageFolder);
 			
+			_logger.Error("Failed to create a user: {errorMessage}", ex.Message);
 			throw;
 		}
+		
+		await _db.SaveChangesAsync(ct);
 		
 		_logger.Information("User {username} (Id: {id}) has registered.", user.Username, user.Id);
 		

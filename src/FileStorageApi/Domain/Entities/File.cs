@@ -1,16 +1,17 @@
-﻿using System;
+﻿using FileStorageApi.Domain.Enums;
+using System;
 
 namespace FileStorageApi.Domain.Entities;
 
 public class File
 {
-	public Guid Id { get; set; }
-	public string Name { get; set; } = default!;
-	public string Extension { get; set; } = default!;
-	public long Size { get; set; }
-	public bool IsTrashed { get; set; }
-	public DateTimeOffset CreatedAt { get; set; }
-	public DateTimeOffset ModifiedAt { get; set; }
-	public Guid FolderId { get; set; }
-	public Guid UserId { get; set; }
+	public Guid Id { get; init; }
+	public string Name { get; init; } = default!;
+	public long Size { get; init; }
+	public FileType Type { get; init; }
+	public bool IsTrashed { get; init; }
+	public DateTimeOffset CreatedAt { get; init; }
+	public DateTimeOffset ModifiedAt { get; init; }
+	public Guid FolderId { get; init; }
+	public Guid UserId { get; init; }
 }

@@ -6,5 +6,5 @@ namespace FileStorageApi.Data.Repositories;
 
 public interface IFolderRepository
 {
-	Task CreateFolder(Folder folder, CancellationToken ct);
+	Task CreateFolderAsync(Folder folder, CancellationToken ct);
 }
