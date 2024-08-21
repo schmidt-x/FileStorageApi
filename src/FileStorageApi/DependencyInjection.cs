@@ -4,7 +4,7 @@ using Dapper;
 using FileStorageApi.Services;
 using Microsoft.Extensions.DependencyInjection;
 using FileStorageApi.Infrastructure;
-using FileStorageApi.Common.Interfaces;
+using FileStorageApi.Common.Contracts;
 using FileStorageApi.Data;
 using FileStorageApi.Features;
 using FileStorageApi.Features.Auth.Contracts;

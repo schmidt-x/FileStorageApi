@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileStorageApi.Common.Interfaces;
+namespace FileStorageApi.Common.Contracts;
 
 public interface IUser
 {

@@ -1,4 +1,4 @@
-﻿using FileStorageApi.Common.Interfaces;
+﻿using FileStorageApi.Common.Contracts;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security;
