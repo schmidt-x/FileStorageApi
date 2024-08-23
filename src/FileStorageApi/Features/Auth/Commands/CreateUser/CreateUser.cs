@@ -3,7 +3,7 @@ using FileStorageApi.Features.Auth.Services;
 using FileStorageApi.Domain.Entities;
 using FileStorageApi.Features.Infrastructure;
 using FileStorageApi.Features.Auth.Contracts;
-using FileStorageApi.Options;
+using FileStorageApi.Common.Options;
 using FileStorageApi.Common;
 using FileStorageApi.Data;
 using Microsoft.Extensions.Options;

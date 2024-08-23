@@ -1,4 +1,4 @@
-﻿namespace FileStorageApi.Options;
+﻿namespace FileStorageApi.Common.Options;
 
 public class AuthOptions
 {

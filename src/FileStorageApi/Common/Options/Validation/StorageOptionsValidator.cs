@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Text;
 
-namespace FileStorageApi.Options.Validation;
+namespace FileStorageApi.Common.Options.Validation;
 
 public class StorageOptionsValidator : IValidateOptions<StorageOptions>
 {

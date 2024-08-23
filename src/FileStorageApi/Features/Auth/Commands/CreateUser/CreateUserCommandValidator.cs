@@ -1,7 +1,7 @@
 ﻿using FileStorageApi.Features.Auth.Helpers;
 using System.Text.RegularExpressions;
+using FileStorageApi.Common.Options;
 using Microsoft.Extensions.Options;
-using FileStorageApi.Options;
 using FluentValidation;
 
 namespace FileStorageApi.Features.Auth.Commands.CreateUser;
