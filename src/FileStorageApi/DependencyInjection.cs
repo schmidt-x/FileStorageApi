@@ -43,7 +43,7 @@ public static class DependencyInjection
 		services.AddAuthorization();
 		
 		services.AddSingleton<IAuthSchemeProvider, CookieAuthSchemeProvider>();
-		services.AddScoped<IUser, CurrentUser>();
+		services.AddSingleton<IUser, CurrentUser>();
 		
 		services.AddHttpContextAccessor();
 		

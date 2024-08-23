@@ -8,21 +8,23 @@ namespace FileStorageApi.Services;
 
 public class CurrentUser : IUser
 {
-	private readonly HttpContext _context;
+	private readonly IHttpContextAccessor _ctxAccessor;
 	
-	public CurrentUser(IHttpContextAccessor contextAccessor)
+	public CurrentUser(IHttpContextAccessor ctxAccessor)
 	{
-		_context = contextAccessor.HttpContext!;
+		_ctxAccessor = ctxAccessor;
 	}
 	
 	public Guid Id()
 	{
-		if (_context.User.Identity is null || !_context.User.Identity.IsAuthenticated)
+		var ctx = _ctxAccessor.HttpContext!;
+		
+		if (ctx.User.Identity is null || !ctx.User.Identity.IsAuthenticated)
 		{
 			throw new InvalidOperationException("User is not authenticated.");
 		}
 		
-		var rawId = _context.User.FindFirstValue(ClaimTypes.NameIdentifier) 
+		var rawId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) 
 		            ?? throw new SecurityException("Claim 'NameIdentifier' is not present.");
 		
 		if (!Guid.TryParse(rawId, out var id))
