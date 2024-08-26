@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using FileStorageApi.Features.Auth.Commands.CreateUser;
 using FileStorageApi.Features.Auth.Commands.LoginUser;
@@ -24,7 +23,7 @@ public class Auth : EndpointGroupBase
 		[FromForm] string username,
 		[FromForm] string password,
 		CreateUserHandler handler,
-		IHttpContextAccessor ctxAccessor,
+		HttpResponse response,
 		CancellationToken ct)
 	{
 		var command = new CreateUserCommand(email, username, password);
@@ -38,21 +37,16 @@ public class Auth : EndpointGroupBase
 				: new FailResponse("Error", ex.Message));
 		}
 		
-		var ctx = ctxAccessor.HttpContext!;
+		response.StatusCode = StatusCodes.Status201Created;
 		
-		await ctx.SignInAsync(
-			CookieAuthenticationDefaults.AuthenticationScheme,
-			result.Value,
-			new AuthenticationProperties { IsPersistent = true });
-		
-		return Results.Created();
+		return Results.SignIn(result.Value, new AuthenticationProperties { IsPersistent = true });
 	}	
 	
 	public async Task<IResult> LoginAsync(
 		[FromForm] string login,
 		[FromForm] string password,
 		LoginUser handler,
-		IHttpContextAccessor ctxAccessor,
+		HttpResponse response,
 		CancellationToken ct)
 	{
 		var command = new LoginUserCommand(login, password);
@@ -66,14 +60,9 @@ public class Auth : EndpointGroupBase
 				: new FailResponse("Error", ex.Message));
 		}
 		
-		var ctx = ctxAccessor.HttpContext!;
+		response.StatusCode = StatusCodes.Status200OK;
 		
-		await ctx.SignInAsync(
-			CookieAuthenticationDefaults.AuthenticationScheme,
-			result.Value,
-			new AuthenticationProperties { IsPersistent = true });
-		
-		return Results.NoContent();
+		return Results.SignIn(result.Value, new AuthenticationProperties { IsPersistent = true });
 	}
 	
 	public override void Map(WebApplication app)
@@ -90,7 +79,7 @@ public class Auth : EndpointGroupBase
 		
 		auth
 			.MapPost("/login", LoginAsync)
-			.Produces(StatusCodes.Status204NoContent)
+			.Produces(StatusCodes.Status200OK)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
 			
 	}
