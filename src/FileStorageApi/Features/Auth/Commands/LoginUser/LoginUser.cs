@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Security.Claims;
 using FileStorageApi.Features.Infrastructure;
-using FileStorageApi.Features.Auth.Contracts;
 using FileStorageApi.Features.Auth.Services;
 using FluentValidation;
 using System.Threading;

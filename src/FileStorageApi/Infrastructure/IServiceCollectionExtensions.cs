@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using FileStorageApi.Common.Services;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
@@ -102,4 +103,10 @@ public static class IServiceCollectionExtensions
 		});
 	}
 	
+	public static IServiceCollection AddCommonServices(this IServiceCollection services)
+	{
+		services.AddSingleton<IUser, CurrentUser>();
+		
+		return services;
+	}
 }

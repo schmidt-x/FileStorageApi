@@ -1,4 +1,4 @@
-﻿namespace FileStorageApi.Features.Auth.Contracts;
+﻿namespace FileStorageApi.Features.Auth.Services;
 
 public interface IAuthSchemeProvider
 {

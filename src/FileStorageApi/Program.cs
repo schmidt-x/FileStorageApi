@@ -1,6 +1,13 @@
+using System;
+using System.Reflection;
+using Dapper;
+using FileStorageApi.Data;
+using FileStorageApi.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using FileStorageApi.Infrastructure;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace FileStorageApi;
@@ -11,7 +18,31 @@ class Program
 	{
 		var builder = WebApplication.CreateBuilder();
 		
-		builder.Services.AddFileStorageApiServices(builder.Configuration);
+		builder.Services.AddFeatures();
+		builder.Services.AddCommonServices();
+		builder.Services.AddSerilog(builder.Configuration);
+		
+		builder.Services
+			.AddConnectionStringsOptions()
+			.AddStorageOptions()
+			.AddAuthOptions();
+		
+		builder.Services.AddFluentMigrator();
+		builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+			
+		builder.Services.AddSingleton(TimeProvider.System);
+		
+		builder.Services.AddNpgsql();
+		DefaultTypeMap.MatchNamesWithUnderscores = true;
+		
+		builder.Services.AddScoped<IRepositoryContext, RepositoryContext>();
+		
+		builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
+		
+		builder.Services.AddCookieAuthentication();
+		builder.Services.AddAuthorization();
+		
+		builder.Services.AddHttpContextAccessor();
 		
 		var app = builder.Build();
 		

@@ -2,7 +2,6 @@
 using FileStorageApi.Features.Auth.Services;
 using FileStorageApi.Domain.Entities;
 using FileStorageApi.Features.Infrastructure;
-using FileStorageApi.Features.Auth.Contracts;
 using FileStorageApi.Common.Options;
 using FileStorageApi.Common;
 using FileStorageApi.Data;
@@ -95,27 +94,31 @@ public class CreateUserHandler : RequestHandlerBase
 		};
 		
 		var folderIdStr = user.FolderId.ToString();
-		
 		var userStorageFolder = Path.Combine(_storageOpts.StorageFolder, folderIdStr);
+		
 		Directory.CreateDirectory(userStorageFolder);
 		
-		await _db.BeginTransactionAsync(ct);
+		bool duringCreation = false;
 		
 		try
 		{
+			await _db.BeginTransactionAsync(ct);
+			
+			duringCreation = true;
 			await _db.Users.CreateUserAsync(user, ct);
 			await _db.Folders.CreateFolderAsync(folder, ct);
+			duringCreation = false;
+			
+			await _db.SaveChangesAsync(ct);
 		}
 		catch (Exception ex)
 		{
-			await _db.UndoChangesAsync();
+			if (duringCreation) await _db.UndoChangesAsync();
 			Directory.Delete(userStorageFolder);
 			
 			_logger.Error("Failed to create a user: {errorMessage}", ex.Message);
 			throw;
 		}
-		
-		await _db.SaveChangesAsync(ct);
 		
 		_logger.Information("User {username} (Id: {id}) has registered.", user.Username, user.Id);
 		
@@ -129,10 +132,3 @@ public class CreateUserHandler : RequestHandlerBase
 		return new ClaimsPrincipal(identity);
 	}
 }
-
-
-
-
-
-
-

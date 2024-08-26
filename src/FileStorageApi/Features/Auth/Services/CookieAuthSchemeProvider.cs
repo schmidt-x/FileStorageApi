@@ -1,7 +1,6 @@
-﻿using FileStorageApi.Features.Auth.Contracts;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 
-namespace FileStorageApi.Services;
+namespace FileStorageApi.Features.Auth.Services;
 
 public class CookieAuthSchemeProvider : IAuthSchemeProvider
 {

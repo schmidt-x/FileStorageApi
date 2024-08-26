@@ -1,11 +1,10 @@
 ﻿using FileStorageApi.Domain.Constants;
-using FileStorageApi.Common.Contracts;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security;
 using System;
 
-namespace FileStorageApi.Services;
+namespace FileStorageApi.Common.Services;
 
 public class CurrentUser : IUser
 {
