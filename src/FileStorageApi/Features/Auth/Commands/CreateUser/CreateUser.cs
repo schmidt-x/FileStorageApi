@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Serilog;
 using System;
+using FileStorageApi.Domain.Constants;
 using FluentValidation;
 
 namespace FileStorageApi.Features.Auth.Commands.CreateUser;
@@ -93,7 +94,9 @@ public class CreateUserHandler : RequestHandlerBase
 			FolderPath = folderPath
 		};
 		
-		var userStorageFolder = Path.Combine(_storageOpts.StorageFolder, user.FolderId.ToString());
+		var folderIdStr = user.FolderId.ToString();
+		
+		var userStorageFolder = Path.Combine(_storageOpts.StorageFolder, folderIdStr);
 		Directory.CreateDirectory(userStorageFolder);
 		
 		await _db.BeginTransactionAsync(ct);
@@ -117,7 +120,8 @@ public class CreateUserHandler : RequestHandlerBase
 		_logger.Information("User {username} (Id: {id}) has registered.", user.Username, user.Id);
 		
 		Claim[] claims = [
-			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) 
+			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+			new Claim(AuthClaims.FolderId, folderIdStr)
 		];
 		
 		var identity = new ClaimsIdentity(claims, _authSchemeProvider.Scheme);

@@ -26,7 +26,7 @@ public class StorageOptionsValidator : IValidateOptions<StorageOptions>
 		
 		if (options.FullPathMaxLength < options.PathSegmentMaxLength + options.FileNameMaxLength)
 		{
-			sb.Append("\nFull path max length is shorter than Folder + File names length.");
+			sb.Append("\nFull path's max length is shorter than Folder + File names length.");
 		}
 		
 		return sb.Length != 0

@@ -54,7 +54,8 @@ public static class IServiceCollectionExtensions
 	{
 		services
 			.AddOptions<StorageOptions>()
-			.BindConfiguration(StorageOptions.Storage);
+			.BindConfiguration(StorageOptions.Storage)
+			.ValidateOnStart();
 		
 		services.AddSingleton<IValidateOptions<StorageOptions>, StorageOptionsValidator>();
 		

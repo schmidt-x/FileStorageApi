@@ -1,4 +1,5 @@
-﻿using FileStorageApi.Common.Contracts;
+﻿using FileStorageApi.Domain.Constants;
+using FileStorageApi.Common.Contracts;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security;
@@ -17,21 +18,43 @@ public class CurrentUser : IUser
 	
 	public Guid Id()
 	{
-		var ctx = _ctxAccessor.HttpContext!;
+		var user = _ctxAccessor.HttpContext!.User;
 		
-		if (ctx.User.Identity is null || !ctx.User.Identity.IsAuthenticated)
-		{
-			throw new InvalidOperationException("User is not authenticated.");
-		}
+		ThrowIfNotAuthenticated(user);
 		
-		var rawId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) 
-		            ?? throw new SecurityException("Claim 'NameIdentifier' is not present.");
+		var rawId = user.FindFirstValue(ClaimTypes.NameIdentifier) 
+		            ?? throw new SecurityException($"Claim '{nameof(ClaimTypes.NameIdentifier)}' is not present.");
 		
 		if (!Guid.TryParse(rawId, out var id))
 		{
-			throw new SecurityException("Claim 'NameIdentifier' is not valid Guid value.");
+			throw new SecurityException($"Claim '{nameof(ClaimTypes.NameIdentifier)}' is not valid Guid value.");
 		}
 		
 		return id;
+	}
+	
+	public Guid FolderId()
+	{
+		var user = _ctxAccessor.HttpContext!.User;
+		
+		ThrowIfNotAuthenticated(user);
+		
+		var rawId = user.FindFirstValue(AuthClaims.FolderId) 
+		            ?? throw new SecurityException($"Claim '{nameof(AuthClaims.FolderId)}' is not present.");
+		
+		if (!Guid.TryParse(rawId, out var id))
+		{
+			throw new SecurityException($"Claim '{nameof(AuthClaims.FolderId)}' is not valid Guid value.");
+		}
+		
+		return id;
+	}
+	
+	private static void ThrowIfNotAuthenticated(ClaimsPrincipal user)
+	{
+		if (user.Identity is null || !user.Identity.IsAuthenticated)
+		{
+			throw new InvalidOperationException("User is not authenticated.");
+		}
 	}
 }

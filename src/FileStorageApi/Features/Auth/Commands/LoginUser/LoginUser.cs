@@ -8,6 +8,7 @@ using FluentValidation;
 using System.Threading;
 using FileStorageApi.Data;
 using FileStorageApi.Common;
+using FileStorageApi.Domain.Constants;
 using Serilog;
 
 namespace FileStorageApi.Features.Auth.Commands.LoginUser;
@@ -56,7 +57,8 @@ public class LoginUser : RequestHandlerBase
 		_logger.Information("User {username} (Id: {id}) has logged in.", user.Username, user.Id);
 		
 		Claim[] claims = [ 
-			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+			new Claim(AuthClaims.FolderId, user.FolderId.ToString())
 		];
 		
 		var identity = new ClaimsIdentity(claims, _authSchemeProvider.Scheme);

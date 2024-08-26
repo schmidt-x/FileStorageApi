@@ -64,7 +64,7 @@ public class InitialMigration_20240820_01 : Migration
 				folder_id   UUID      NOT NULL,
 				user_id     UUID      NOT NULL,
 				
-				UNIQUE (name, folder_id, user_id),
+				UNIQUE (name, extension, folder_id, user_id),
 				FOREIGN KEY (folder_id) REFERENCES folders(id),
 				FOREIGN KEY (user_id)   REFERENCES users(id)
 			);
