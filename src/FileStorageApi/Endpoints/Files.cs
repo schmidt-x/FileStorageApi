@@ -34,7 +34,7 @@ public class Files : EndpointGroupBase
 	public async Task<IResult> CreateFile(
 		[FromForm] IFormFile file,
 		[FromForm] string? folder,
-		CreateFileHandler handler,
+		CreateFileCommandHandler handler,
 		CancellationToken ct)
 	{
 		await using var fileStream = file.OpenReadStream();

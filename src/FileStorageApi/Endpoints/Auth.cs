@@ -18,11 +18,29 @@ namespace FileStorageApi.Endpoints;
 
 public class Auth : EndpointGroupBase
 {
+	public override void Map(WebApplication app)
+	{
+		var auth = app
+			.MapGroup("/api/auth")
+			.WithTags("Auth")
+			.DisableAntiforgery();  // TODO: remove
+		
+		auth
+			.MapPost("/register", RegisterAsync)
+			.Produces(StatusCodes.Status201Created)
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
+		
+		auth
+			.MapPost("/login", LoginAsync)
+			.Produces(StatusCodes.Status200OK)
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
+	}
+	
 	public async Task<IResult> RegisterAsync(
 		[FromForm] string email,
 		[FromForm] string username,
 		[FromForm] string password,
-		CreateUserHandler handler,
+		CreateUserCommandHandler handler,
 		HttpResponse response,
 		CancellationToken ct)
 	{
@@ -45,7 +63,7 @@ public class Auth : EndpointGroupBase
 	public async Task<IResult> LoginAsync(
 		[FromForm] string login,
 		[FromForm] string password,
-		LoginUser handler,
+		LoginUserCommandHandler handler,
 		HttpResponse response,
 		CancellationToken ct)
 	{
@@ -65,22 +83,4 @@ public class Auth : EndpointGroupBase
 		return Results.SignIn(result.Value, new AuthenticationProperties { IsPersistent = true });
 	}
 	
-	public override void Map(WebApplication app)
-	{
-		var auth = app
-			.MapGroup("/api/auth")
-			.WithTags("Auth")
-			.DisableAntiforgery();  // TODO: remove
-		
-		auth
-			.MapPost("/register", RegisterAsync)
-			.Produces(StatusCodes.Status201Created)
-			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
-		
-		auth
-			.MapPost("/login", LoginAsync)
-			.Produces(StatusCodes.Status200OK)
-			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
-			
-	}
 }

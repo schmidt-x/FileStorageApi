@@ -14,7 +14,7 @@ namespace FileStorageApi.Features.Auth.Commands.LoginUser;
 
 public record LoginUserCommand(string Login, string Password);
 
-public class LoginUser : RequestHandlerBase
+public class LoginUserCommandHandler : RequestHandlerBase
 {
 	private readonly IValidator<LoginUserCommand> _validator;
 	private readonly IRepositoryContext _db;
@@ -22,7 +22,7 @@ public class LoginUser : RequestHandlerBase
 	private readonly ILogger _logger;
 	private readonly IAuthSchemeProvider _authSchemeProvider;
 	
-	public LoginUser(
+	public LoginUserCommandHandler(
 		IValidator<LoginUserCommand> validator,
 		IRepositoryContext db,
 		IPasswordHasher passwordHasher,

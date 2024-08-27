@@ -21,7 +21,7 @@ namespace FileStorageApi.Features.Files.Commands.CreateFile;
 
 public record CreateFileCommand(Stream File, string FileName, string MimeType, string? Folder);
 
-public class CreateFileHandler : RequestHandlerBase
+public class CreateFileCommandHandler : RequestHandlerBase
 {
 	private readonly IValidator<CreateFileCommand> _validator;
 	private readonly IFileSignature _fileSignature;
@@ -30,7 +30,7 @@ public class CreateFileHandler : RequestHandlerBase
 	private readonly StorageOptions _storageOpts;
 	private readonly ILogger _logger;
 	
-	public CreateFileHandler(
+	public CreateFileCommandHandler(
 		IValidator<CreateFileCommand> validator,
 		IFileSignature fileSignature,
 		IRepositoryContext db,

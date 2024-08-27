@@ -19,7 +19,7 @@ namespace FileStorageApi.Features.Auth.Commands.CreateUser;
 
 public record CreateUserCommand(string Email, string Username, string Password);
 
-public class CreateUserHandler : RequestHandlerBase
+public class CreateUserCommandHandler : RequestHandlerBase
 {
 	private readonly IValidator<CreateUserCommand> _validator;
 	private readonly IRepositoryContext _db;
@@ -28,7 +28,7 @@ public class CreateUserHandler : RequestHandlerBase
 	private readonly ILogger _logger;
 	private readonly IAuthSchemeProvider _authSchemeProvider;
 	
-	public CreateUserHandler(
+	public CreateUserCommandHandler(
 		IValidator<CreateUserCommand> validator,
 		IRepositoryContext db,
 		IOptions<StorageOptions> storageOpts,
