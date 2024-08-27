@@ -49,7 +49,8 @@ public class InitialMigration_20240820_01 : Migration
 				'Image',
 				'Audio',
 				'Video',
-				'Document'
+				'Document',
+				'Archive'
 			);
 
 			CREATE TABLE IF NOT EXISTS files (

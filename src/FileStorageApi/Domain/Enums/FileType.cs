@@ -6,5 +6,6 @@ public enum FileType
 	Image,
 	Video,
 	Audio,
-	Document
+	Document,
+	Archive
 }
