@@ -1,6 +1,7 @@
 ﻿using FileStorageApi.Domain.Entities;
 using System.Threading.Tasks;
 using System.Threading;
+using System;
 using Dapper;
 using Npgsql;
 
@@ -37,5 +38,50 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		}
 		
 		await Connection.ExecuteAsync(new CommandDefinition(query, parameters, Transaction, cancellationToken: ct));
+	}
+	
+	public async Task<long> GetSizeAsync(Guid folderId, CancellationToken ct)
+	{
+		const string query = "SELECT size FROM folders WHERE id = @FolderId";
+		
+		var command = new CommandDefinition(query, new { folderId }, Transaction, cancellationToken: ct);
+		
+		return await Connection.ExecuteScalarAsync<long>(command);
+	}
+	
+	public async Task<Guid?> GetFolderIdIfExistsAsync(string path, string name, Guid userId, CancellationToken ct)
+	{
+		const string query = """
+			WITH
+				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
+				
+				SELECT id FROM folders
+				WHERE (name, path_id) = (@Name, (SELECT id FROM _path));
+			""";
+		
+		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
+		
+		var result = await Connection.QuerySingleOrDefaultAsync<Guid>(command);
+		return result != Guid.Empty ? result : null;
+	}
+	
+	public async Task IncreaseSizeAsync(Guid folderId, long size, CancellationToken ct)
+	{
+		const string query = """
+			WITH RECURSIVE _folders AS (
+				SELECT id, parent_id FROM folders WHERE id = @FolderId
+				UNION
+				SELECT f.id, f.parent_id FROM folders f
+				INNER JOIN _folders _f ON _f.parent_id = f.id
+			)
+			
+			UPDATE folders
+			SET size = size + @Size
+			WHERE id in (SELECT id FROM _folders);
+		""";
+		
+		var command = new CommandDefinition(query, new { folderId, size }, Transaction, cancellationToken: ct);
+		
+		await Connection.ExecuteAsync(command);
 	}
 }

@@ -1,6 +1,7 @@
-﻿using FileStorageApi.Features.Auth;
+﻿using Microsoft.Extensions.DependencyInjection;
 using FileStorageApi.Features.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
+using FileStorageApi.Features.Files;
+using FileStorageApi.Features.Auth;
 
 namespace FileStorageApi.Features;
 
@@ -11,6 +12,7 @@ public static class DependencyInjection
 		services.AddRequestHandlersFromExecutingAssembly();
 		
 		services.AddAuthFeatureServices();
+		services.AddFilesFeatureServices();
 		
 		return services;
 	}

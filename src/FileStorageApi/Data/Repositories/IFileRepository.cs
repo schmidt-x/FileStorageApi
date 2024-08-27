@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using FileStorageApi.Domain.Entities;
+using System.Threading.Tasks;
 using System.Threading;
 using System;
 
@@ -6,6 +7,6 @@ namespace FileStorageApi.Data.Repositories;
 
 public interface IFileRepository
 {
-	Task<bool> FileExists(string fileName, string folderName, Guid userId, CancellationToken ct);
-	Task AddFile(string tempName, string fileName, string folderName, Guid userId, CancellationToken ct);
+	Task CreateAsync(File file, CancellationToken ct);
+	Task<bool> ExistsAsync(string fileName, string fileExtension, Guid folderId, Guid userId, CancellationToken ct);
 }
