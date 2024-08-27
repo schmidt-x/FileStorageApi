@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileStorageApi.Common.Exceptions;
+namespace FileStorageApi.Common.Exceptions.FolderExceptions;
 
 public class FolderException : Exception
 {

@@ -1,4 +1,4 @@
-﻿namespace FileStorageApi.Common.Exceptions;
+﻿namespace FileStorageApi.Common.Exceptions.FolderExceptions;
 
 public class InvalidPathException : FolderException
 {

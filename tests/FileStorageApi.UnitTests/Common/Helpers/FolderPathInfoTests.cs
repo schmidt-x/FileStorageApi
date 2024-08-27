@@ -1,4 +1,4 @@
-﻿using FileStorageApi.Common.Exceptions;
+﻿using FileStorageApi.Common.Exceptions.FolderExceptions;
 using FileStorageApi.Common.Helpers;
 using FileStorageApi.Common;
 using FluentAssertions;

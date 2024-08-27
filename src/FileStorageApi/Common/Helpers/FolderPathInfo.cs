@@ -1,4 +1,4 @@
-﻿using FileStorageApi.Common.Exceptions;
+﻿using FileStorageApi.Common.Exceptions.FolderExceptions;
 using FileStorageApi.Common.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System;
