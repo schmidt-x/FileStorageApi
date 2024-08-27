@@ -9,6 +9,10 @@ public class FolderPathInfo
 {
 	public string Path { get; }
 	public string Name { get; }
+	public bool IsRootFolder { get; }
+	
+	private const string RootFolderPath = "";
+	private const string RootFolderName = "/";
 	
 	public static readonly char[] PathSeparators = ['\\', '/'];
 	
@@ -16,20 +20,21 @@ public class FolderPathInfo
 	{
 		Path = path;
 		Name = name;
+		IsRootFolder = Path == RootFolderPath && Name == RootFolderName;
 	}
 	
-	public static Result<FolderPathInfo> New(string folderPath, int pathSegmentMaxLength = int.MaxValue)
+	public static Result<FolderPathInfo> New(string? folderPath, int pathSegmentMaxLength = int.MaxValue)
 	{
 		if (string.IsNullOrEmpty(folderPath))
 		{
-			return new InvalidPathException("Folder path is empty.");
+			return new FolderPathInfo(RootFolderPath, RootFolderName);
 		}
 		
 		var trimmedPath = folderPath.AsSpan().Trim();
 		
 		if (trimmedPath.Length == 1 && trimmedPath[0] is '/')
 		{
-			return new FolderPathInfo("", "/");
+			return new FolderPathInfo(RootFolderPath, RootFolderName);
 		}
 		
 		var segments = folderPath.Split(
@@ -38,7 +43,7 @@ public class FolderPathInfo
 		
 		return segments.Length switch
 		{
-			0 => new InvalidPathException("Invalid folder path."),
+			0 => new FolderPathInfo(RootFolderPath, RootFolderName),
 			1 => ValidateSingle(segments[0], pathSegmentMaxLength),
 			_ => Validate(segments, pathSegmentMaxLength)
 		};

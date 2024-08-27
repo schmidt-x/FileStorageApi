@@ -73,9 +73,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			return new Exception("Not enough space.");
 		}
 		
-		var folderName = string.IsNullOrEmpty(command.Folder) ? "/" : command.Folder;
-		
-		var folderInfoResult = FolderPathInfo.New(folderName, _storageOpts.PathSegmentMaxLength);
+		var folderInfoResult = FolderPathInfo.New(command.Folder, _storageOpts.PathSegmentMaxLength);
 		if (folderInfoResult.IsError(out ex))
 		{
 			return ex;

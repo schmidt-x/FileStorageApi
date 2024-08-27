@@ -62,6 +62,7 @@ public class FolderPathInfoTests
 		parent1.Should().NotBeNull();
 		parent1!.Path.Should().Be("/");
 		parent1.Name.Should().Be("FolderA");
+		parent1.IsRootFolder.Should().Be(false);
 		
 		// parent2 (root folder)
 		var parent2Exists = parent1.TryGetParent(out var parent2);
@@ -70,6 +71,7 @@ public class FolderPathInfoTests
 		parent2.Should().NotBeNull();
 		parent2!.Path.Should().Be("");
 		parent2.Name.Should().Be("/");
+		parent2.IsRootFolder.Should().Be(true);
 		
 		// parent3
 		var parent3Exists = parent2.TryGetParent(out var parent3);
@@ -92,5 +94,21 @@ public class FolderPathInfoTests
 		folderInfoResult.State.Should().Be(ResultState.Err);
 		folderInfoResult.Error.Should().BeOfType<InvalidPathException>()
 			.Which.Message.Should().Be($"Folder name exceeds the limit of {pathSegmentMaxLength} characters.");
+	}
+	
+	[Theory]
+	[InlineData("/", true)]
+	[InlineData(@"\", true)]
+	[InlineData("//", true)]
+	[InlineData("Hello", false)]
+	[InlineData("/New folder", false)]
+	public void MustBeOrNotBeRootFolder(string folderName, bool isRoot)
+	{
+		// Arrange
+		// Act
+		var folder = FolderPathInfo.New(folderName).Value;
+		
+		// Assert
+		folder.IsRootFolder.Should().Be(isRoot);
 	}
 }
