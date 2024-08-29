@@ -11,7 +11,7 @@ public class Folder
 	public bool IsTrashed { get; init; }
 	public DateTimeOffset CreatedAt { get; init; }
 	public DateTimeOffset ModifiedAt { get; init; }
-	public Guid ParentId { get; init; }
+	public Guid ParentId { get; set; }
 	public Guid UserId { get; init; }
 	public FolderPath? FolderPath { get; init; }
 }
