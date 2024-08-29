@@ -82,10 +82,10 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		FolderPathInfo folderInfo = folderInfoResult.Value;
 		var userId = _user.Id();
 		
-		var folderId = await _db.Folders.GetFolderIdIfExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct);
+		var folderId = await _db.Folders.GetIdIfFolderExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct);
 		if (!folderId.HasValue)
 		{
-			return new FolderNotFoundException($"Folder '{folderInfo.Path + folderInfo.Name}' does not exist.");
+			return new FolderNotFoundException($"Folder '{folderInfo.FullName}' does not exist.");
 		}
 		
 		var fileName = Path.GetFileNameWithoutExtension(command.FileName);

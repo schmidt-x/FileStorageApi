@@ -11,6 +11,9 @@ public class FolderPathInfo
 	public string Name { get; }
 	public bool IsRootFolder { get; }
 	
+	private string? _fullName;
+	public string FullName => _fullName ??= Path + Name;
+	
 	private const string RootFolderPath = "";
 	private const string RootFolderName = "/";
 	
@@ -58,7 +61,7 @@ public class FolderPathInfo
 			case "":
 				return false;
 			case "/":
-				parent = new FolderPathInfo("", "/");
+				parent = new FolderPathInfo(RootFolderPath, RootFolderName);
 				return true;
 		}
 		

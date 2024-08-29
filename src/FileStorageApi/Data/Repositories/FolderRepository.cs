@@ -49,20 +49,57 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		return await Connection.ExecuteScalarAsync<long>(command);
 	}
 	
-	public async Task<Guid?> GetFolderIdIfExistsAsync(string path, string name, Guid userId, CancellationToken ct)
+	public async Task<Guid?> GetIdIfFolderExistsAsync(string path, string name, Guid userId, CancellationToken ct)
 	{
 		const string query = """
 			WITH
 				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
 				
 				SELECT id FROM folders
-				WHERE (name, path_id) = (@Name, (SELECT id FROM _path));
+				WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId);
 			""";
 		
 		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
 		
-		var result = await Connection.QuerySingleOrDefaultAsync<Guid>(command);
-		return result != Guid.Empty ? result : null;
+		return await Connection.QuerySingleOrDefaultAsync<Guid?>(command);
+	}
+	
+	public async Task<Guid> GetIdAsync(string path, string name, Guid userId, CancellationToken ct)
+	{
+		const string query = """
+			WITH
+				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
+				
+				SELECT id FROM folders
+				WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId);
+			""";
+		
+		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
+		
+		return await Connection.QuerySingleAsync<Guid>(command);
+	}
+	
+	public async Task<bool> ExistsAsync(string path, string name, Guid userId, CancellationToken ct)
+	{
+		const string query = """
+			WITH
+				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
+				SELECT EXISTS(
+					SELECT 1 FROM folders
+					WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId));
+			""";
+		
+		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
+		
+		return await Connection.ExecuteScalarAsync<bool>(command);
+	}
+	
+	public async Task<Guid?> GetPathIdIfExistsAsync(string path, Guid userId, CancellationToken ct)
+	{
+		const string query = "SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId);";
+		
+		return await Connection.QuerySingleOrDefaultAsync<Guid?>(
+			new CommandDefinition(query, new { path, userId }, Transaction, cancellationToken: ct));
 	}
 	
 	public async Task IncreaseSizeAsync(Guid folderId, long size, CancellationToken ct)
@@ -77,7 +114,7 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			
 			UPDATE folders
 			SET size = size + @Size
-			WHERE id in (SELECT id FROM _folders);
+			WHERE id IN (SELECT id FROM _folders);
 		""";
 		
 		var command = new CommandDefinition(query, new { folderId, size }, Transaction, cancellationToken: ct);
