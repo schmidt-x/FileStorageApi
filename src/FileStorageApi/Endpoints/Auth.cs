@@ -50,13 +50,15 @@ public class Auth : EndpointGroupBase
 		
 		if (result.IsError(out Exception? ex))
 		{
-			return Results.BadRequest(ex is ValidationException validationEx
-				? new FailResponse(validationEx.Errors)
-				: new FailResponse("Error", ex.Message));
+			return Results.BadRequest(ex switch
+			{
+				ValidationException vEx => new FailResponse(vEx.Errors),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
+				_                       => new FailResponse("Error", ex.Message)
+			});
 		}
 		
 		response.StatusCode = StatusCodes.Status201Created;
-		
 		return Results.SignIn(result.Value, new AuthenticationProperties { IsPersistent = true });
 	}	
 	
@@ -74,12 +76,11 @@ public class Auth : EndpointGroupBase
 		if (result.IsError(out Exception? ex))
 		{
 			return Results.BadRequest(ex is AuthenticationException
-				? new FailResponse("Auth", "Wrong Credentials.")
+				? new FailResponse("InvalidCredentials", "Login or password is incorrect.")
 				: new FailResponse("Error", ex.Message));
 		}
 		
 		response.StatusCode = StatusCodes.Status200OK;
-		
 		return Results.SignIn(result.Value, new AuthenticationProperties { IsPersistent = true });
 	}
 	

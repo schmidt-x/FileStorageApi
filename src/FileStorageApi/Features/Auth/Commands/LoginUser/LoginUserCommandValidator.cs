@@ -1,18 +1,22 @@
-﻿using FileStorageApi.Features.Auth.Helpers;
-
+﻿using FileStorageApi.Common.Options;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 
 namespace FileStorageApi.Features.Auth.Commands.LoginUser;
 
 public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {
-	public LoginUserCommandValidator()
+	public LoginUserCommandValidator(IOptions<AuthOptions> authOpts)
 	{
 		RuleFor(x => x.Login).NotEmpty().EmailAddress();
 		
 		RuleFor(x => x.Password)
 			.NotEmpty()
-			.MinimumLength(8)
-			.Must(password => PasswordValidator.Validate(password).Length == 0);
+			.MinimumLength(authOpts.Value.PasswordMinLength)
+			.Matches("[a-z]")
+			.Matches("[A-Z]")
+			.Matches(@"\d")
+			.Matches(@"[^\w\s]")
+			.Matches(@"^\S*$");
 	}
 }
