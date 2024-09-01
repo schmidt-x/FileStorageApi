@@ -1,7 +1,8 @@
 ﻿namespace FileStorageApi.Common.Exceptions.FileExceptions;
 
-public class DuplicateFileNameException : FileException
+public class DuplicateFileNameException : KeyValueException
 {
-	public DuplicateFileNameException(string message) : base(message)
+	public DuplicateFileNameException(string fileName)
+		: base("DuplicateFileName", $"File with the name '{fileName}' already exists.")
 	{	}
 }

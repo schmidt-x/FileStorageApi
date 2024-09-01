@@ -1,6 +1,6 @@
-﻿using FileStorageApi.Features.Files.Commands.CreateFile;
-using FileStorageApi.Common.Exceptions.FolderExceptions;
-using FileStorageApi.Common.Exceptions.FileExceptions;
+﻿using System;
+using FileStorageApi.Features.Files.Commands.CreateFile;
+using FileStorageApi.Features.Files.Queries.GetFile;
 using FileStorageApi.Common.Exceptions;
 using FileStorageApi.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using FileStorageApi.Responses;
 using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Web;
 
 namespace FileStorageApi.Endpoints;
 
@@ -25,10 +25,14 @@ public class Files : EndpointGroupBase
 		
 		files
 			.MapPost("/", CreateFile)
-			.Produces(StatusCodes.Status201Created)
+			.Produces<CreatedFile>(StatusCodes.Status201Created)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
-			.Produces(StatusCodes.Status413PayloadTooLarge)
-			.Produces(StatusCodes.Status401Unauthorized);
+			.Produces(StatusCodes.Status401Unauthorized)
+			.Produces(StatusCodes.Status413PayloadTooLarge);
+		
+		files
+			.MapGet("/info/{*fileName}", GetFile)
+			.WithName("GetFile");
 	}
 	
 	public async Task<IResult> CreateFile(
@@ -41,18 +45,27 @@ public class Files : EndpointGroupBase
 		
 		var command = new CreateFileCommand(fileStream, file.FileName, file.ContentType, folder);
 		
-		// TODO: use Option<T>?
-		Exception? ex = await handler.Handle(command, ct);
+		var createFileResult = await handler.Handle(command, ct);
 		
-		if (ex is null) return Results.Created();
-		
-		return Results.BadRequest(ex switch
-		{
-			ValidationException vEx => new FailResponse(vEx.Errors),
-			FileException           => new FailResponse("File", ex.Message),
-			FolderException         => new FailResponse("Folder", ex.Message),
-			_                       => new FailResponse("Error", ex.Message)
-		});
+		return createFileResult.Match<IResult>(
+			
+			createdFile => Results.CreatedAtRoute(
+				nameof(GetFile),
+				new { fileName = createdFile.FullName[1..]},
+				createdFile),
+			
+			ex => Results.BadRequest(ex switch
+			{
+				ValidationException vEx => new FailResponse(vEx.Errors),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
+				_                       => new FailResponse("Error", ex.Message)
+			}));
 	}
 	
+	public async Task<IResult> GetFile(string fileName)
+	{
+		fileName = HttpUtility.UrlDecode(fileName);
+		
+		throw new NotImplementedException();
+	}
 }

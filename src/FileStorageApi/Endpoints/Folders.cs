@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using FileStorageApi.Common.Exceptions;
-using FileStorageApi.Common.Exceptions.FolderExceptions;
 using FileStorageApi.Features.Folders.Commands.CreateFolder;
 using FileStorageApi.Infrastructure;
 using FileStorageApi.Responses;
@@ -51,7 +50,7 @@ public class Folders : EndpointGroupBase
 			ex => Results.BadRequest(ex switch
 			{
 				ValidationException vEx => new FailResponse(vEx.Errors),
-				FolderException         => new FailResponse("Folder", ex.Message),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
 				_                       => new FailResponse("Error", ex.Message)
 			}));
 	}

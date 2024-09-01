@@ -1,9 +1,8 @@
-﻿using System;
+﻿namespace FileStorageApi.Common.Exceptions.FolderExceptions;
 
-namespace FileStorageApi.Common.Exceptions.FolderExceptions;
-
-public class DuplicateFolderNameException : Exception
+public class DuplicateFolderNameException : KeyValueException
 {
-	public DuplicateFolderNameException(string message) : base(message)
+	public DuplicateFolderNameException(string folderName)
+		: base("DuplicateFolderName", $"Folder '{folderName}' already exists.")
 	{	}
 }

@@ -64,7 +64,7 @@ public class CreateFolderCommandHandler : RequestHandlerBase
 		
 		if (folderInfo.IsRootFolder)
 		{
-			return new DuplicateFolderNameException("Folder '/' already exists.");
+			return new DuplicateFolderNameException(folderInfo.Name);
 		}
 		
 		var userId = _user.Id();
@@ -75,7 +75,7 @@ public class CreateFolderCommandHandler : RequestHandlerBase
 		{
 			if (await _db.Folders.ExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct))
 			{
-				return new DuplicateFolderNameException($"Folder '{folderInfo.FullName}' already exists.");
+				return new DuplicateFolderNameException(folderInfo.FullName);
 			}
 			
 			await CreateFolder(folderInfo, pathId.Value, timeNow, userId, ct);

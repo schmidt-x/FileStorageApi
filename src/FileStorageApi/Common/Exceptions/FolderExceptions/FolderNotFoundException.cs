@@ -1,7 +1,8 @@
 ﻿namespace FileStorageApi.Common.Exceptions.FolderExceptions;
 
-public class FolderNotFoundException : FolderException
+public class FolderNotFoundException : KeyValueException
 {
-	public FolderNotFoundException(string message) : base(message)
+	public FolderNotFoundException(string folderName)
+		: base("FolderNotFound", $"Folder '{folderName}' does not exist.")
 	{	}
 }

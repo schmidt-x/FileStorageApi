@@ -2,6 +2,7 @@
 using FileStorageApi.Common.Exceptions.FolderExceptions;
 using FileStorageApi.Common.Exceptions.FileExceptions;
 using File = FileStorageApi.Domain.Entities.File;
+using FileStorageApi.Features.Files.Exceptions;
 using FileStorageApi.Features.Files.Services;
 using FileStorageApi.Features.Infrastructure;
 using FileStorageApi.Common.Services;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using FileStorageApi.Common.Options;
 using FileStorageApi.Domain.Enums;
 using System.Threading.Tasks;
+using FileStorageApi.Common;
 using FileStorageApi.Data;
 using FluentValidation;
 using System.Threading;
@@ -20,6 +22,8 @@ using System;
 namespace FileStorageApi.Features.Files.Commands.CreateFile;
 
 public record CreateFileCommand(Stream File, string FileName, string MimeType, string? Folder);
+
+public record CreatedFile(string Name, string Folder, string FullName, long Size, DateTimeOffset CreatedAt);
 
 public class CreateFileCommandHandler : RequestHandlerBase
 {
@@ -46,7 +50,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		_logger = logger;
 	}
 	
-	public async Task<Exception?> Handle(CreateFileCommand command, CancellationToken ct)
+	public async Task<Result<CreatedFile>> Handle(CreateFileCommand command, CancellationToken ct)
 	{
 		var validationResult = _validator.Validate(command);
 		if (!validationResult.IsValid)
@@ -67,10 +71,9 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		var rootFolderId = _user.FolderId();
 		
 		var size = await _db.Folders.GetSizeAsync(rootFolderId, ct);
-		if (size + command.File.Length >= _storageOpts.StorageSizeLimitPerUser)
+		if (size + command.File.Length > _storageOpts.StorageSizeLimitPerUser)
 		{
-			// TODO: return more specific exception
-			return new Exception("Not enough space.");
+			return new StorageOutOfSpaceException();
 		}
 		
 		var folderInfoResult = FolderPathInfo.New(command.Folder, _storageOpts.PathSegmentMaxLength);
@@ -85,14 +88,14 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		var folderId = await _db.Folders.GetIdIfFolderExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct);
 		if (!folderId.HasValue)
 		{
-			return new FolderNotFoundException($"Folder '{folderInfo.FullName}' does not exist.");
+			return new FolderNotFoundException(folderInfo.FullName);
 		}
 		
 		var fileName = Path.GetFileNameWithoutExtension(command.FileName);
 		
 		if (await _db.Files.ExistsAsync(fileName, fileExt, folderId.Value, userId, ct))
 		{
-			return new DuplicateFileNameException($"File with the name '{command.FileName}' already exists.");
+			return new DuplicateFileNameException(command.FileName);
 		}
 		
 		var timeNow = DateTimeOffset.UtcNow;
@@ -146,7 +149,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			if (duringTransaction) await _db.UndoChangesAsync();
 			System.IO.File.Delete(fileFullPath);
 			
-			_logger.Error("Failed at creating file for user {userId}: {errorMessage}", userId, exception.Message);
+			_logger.Error("Failed at creating file for user {userId}: {errorMessage}.", userId, exception.Message);
 			throw;
 		}
 		
@@ -154,6 +157,11 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		_logger.Information(
 			"User {userId} created new file: {fileName} (Id: {fileId}).", userId, command.FileName, file.Id);
 		
-		return null;
+		return new CreatedFile(
+			command.FileName,
+			folderInfo.FullName,
+			$"{folderInfo.FullName}/{command.FileName}",
+			file.Size,
+			file.CreatedAt);
 	}
 }

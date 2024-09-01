@@ -1,7 +1,8 @@
 ﻿namespace FileStorageApi.Common.Exceptions.FileExceptions;
 
-public class InvalidFileExtensionException : FileException
+public class InvalidFileExtensionException : KeyValueException
 {
-	public InvalidFileExtensionException(string message) : base(message)
+	public InvalidFileExtensionException(string message)
+		: base("InvalidFileExtension", message)
 	{	}
 }

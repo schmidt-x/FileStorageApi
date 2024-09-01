@@ -1,7 +1,7 @@
 ﻿namespace FileStorageApi.Common.Exceptions.FolderExceptions;
 
-public class InvalidPathException : FolderException
+public class InvalidPathException : KeyValueException
 {
-	public InvalidPathException(string message) : base(message)
+	public InvalidPathException(string message)	: base("InvalidPath", message)
 	{	}
 }

@@ -11,10 +11,15 @@ public class CreateFolderCommandValidator : AbstractValidator<CreateFolderComman
 		var fullPathMaxLen = options.Value.FullPathMaxLength;
 		
 		RuleFor(x => x.FolderName)
-			.NotEmpty().WithMessage("FolderName is empty.")
+			.NotEmpty()
+			.WithMessage("FolderName is empty.")
+			.OverridePropertyName("EmptyFolderName");
+		
+		RuleFor(x => x.FolderName)
 			.Must(folderName => IsValidFolderFullNameLength(folderName, fullPathMaxLen))
-				.WithMessage($"FolderName's length exceeds the FullPathMaxLength limit of {fullPathMaxLen} characters," +
-				             " leaving no characters for filename.");
+			.WithMessage($"FolderName's length exceeds the FullPathMaxLength limit of {fullPathMaxLen}" +
+			             " characters, leaving no characters for filename.")
+			.OverridePropertyName("FolderNameTooLong");
 	}
 	
 	private static bool IsValidFolderFullNameLength(string folderName, int maxLength)
