@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using ValidationException = FileStorageApi.Common.Exceptions.ValidationException;
 using FileStorageApi.Common;
-using FileStorageApi.Common.Exceptions.FolderExceptions;
+using FileStorageApi.Features.Folders.Exceptions;
 using FileStorageApi.Common.Helpers;
 using FileStorageApi.Common.Options;
 using FileStorageApi.Common.Services;

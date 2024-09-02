@@ -37,7 +37,7 @@ public class FolderPathInfoTests
 	{
 		// Arrange
 		const ResultState expectedState = ResultState.Err;
-		const string expectedErrorMessage = "Folder name contains Control characters.";
+		const string expectedErrorMessage = "InvalidPath: FolderName contains Control characters.";
 		
 		// Act
 		var res = FolderPathInfo.New(path);
@@ -92,8 +92,9 @@ public class FolderPathInfoTests
 		
 		// Assert
 		folderInfoResult.State.Should().Be(ResultState.Err);
-		folderInfoResult.Error.Should().BeOfType<InvalidPathException>()
-			.Which.Message.Should().Be($"Folder name exceeds the limit of {pathSegmentMaxLength} characters.");
+		folderInfoResult.Error.Should().BeOfType<FolderNameTooLongException>()
+			.Which.Message.Should()
+			.Be($"FolderNameTooLong: FolderName's length exceeds the limit of {pathSegmentMaxLength} characters.");
 	}
 	
 	[Theory]

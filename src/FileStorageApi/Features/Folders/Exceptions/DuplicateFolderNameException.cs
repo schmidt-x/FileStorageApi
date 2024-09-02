@@ -1,4 +1,6 @@
-﻿namespace FileStorageApi.Common.Exceptions.FolderExceptions;
+﻿using FileStorageApi.Common.Exceptions;
+
+namespace FileStorageApi.Features.Folders.Exceptions;
 
 public class DuplicateFolderNameException : KeyValueException
 {
