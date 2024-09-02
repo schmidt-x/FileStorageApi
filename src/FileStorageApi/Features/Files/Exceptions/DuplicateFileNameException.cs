@@ -1,4 +1,6 @@
-﻿namespace FileStorageApi.Common.Exceptions.FileExceptions;
+﻿using FileStorageApi.Common.Exceptions;
+
+namespace FileStorageApi.Features.Files.Exceptions;
 
 public class DuplicateFileNameException : KeyValueException
 {

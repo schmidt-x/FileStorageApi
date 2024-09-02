@@ -1,4 +1,4 @@
-﻿using FileStorageApi.Common.Exceptions.FileExceptions;
+﻿using FileStorageApi.Features.Files.Exceptions;
 using FileStorageApi.Domain.Enums;
 using System.Collections.Generic;
 using FileStorageApi.Common;

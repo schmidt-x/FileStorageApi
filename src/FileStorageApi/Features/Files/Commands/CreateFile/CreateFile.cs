@@ -1,6 +1,5 @@
 ﻿using ValidationException = FileStorageApi.Common.Exceptions.ValidationException;
 using FileStorageApi.Common.Exceptions.FolderExceptions;
-using FileStorageApi.Common.Exceptions.FileExceptions;
 using File = FileStorageApi.Domain.Entities.File;
 using FileStorageApi.Features.Files.Exceptions;
 using FileStorageApi.Features.Files.Services;
