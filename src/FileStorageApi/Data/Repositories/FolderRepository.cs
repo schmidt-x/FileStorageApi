@@ -56,7 +56,7 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
 				
 				SELECT id FROM folders
-				WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId);
+				WHERE (name, path_id, user_id, is_trashed) = (@Name, (SELECT id FROM _path), @UserId, false);
 			""";
 		
 		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
@@ -66,17 +66,8 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 	
 	public async Task<Guid> GetIdAsync(string path, string name, Guid userId, CancellationToken ct)
 	{
-		const string query = """
-			WITH
-				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
-				
-				SELECT id FROM folders
-				WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId);
-			""";
-		
-		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
-		
-		return await Connection.QuerySingleAsync<Guid>(command);
+		return await GetIdIfFolderExistsAsync(path, name, userId, ct) 
+			?? throw new InvalidOperationException("Sequence contains no elements");
 	}
 	
 	public async Task<bool> ExistsAsync(string path, string name, Guid userId, CancellationToken ct)
@@ -84,9 +75,10 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		const string query = """
 			WITH
 				_path AS (SELECT id FROM paths WHERE (path, user_id) = (@Path, @UserId))
+
 				SELECT EXISTS(
 					SELECT 1 FROM folders
-					WHERE (name, path_id, user_id) = (@Name, (SELECT id FROM _path), @UserId));
+					WHERE (name, path_id, user_id, is_trashed) = (@Name, (SELECT id FROM _path), @UserId, false));
 			""";
 		
 		var command = new CommandDefinition(query, new { path, name, userId }, Transaction, cancellationToken: ct);
@@ -107,9 +99,9 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		const string query = """
 			WITH RECURSIVE _folders AS (
 				SELECT id, parent_id FROM folders WHERE id = @FolderId
-				UNION
+				UNION ALL
 				SELECT f.id, f.parent_id FROM folders f
-				INNER JOIN _folders _f ON _f.parent_id = f.id
+				JOIN _folders _f ON _f.parent_id = f.id
 			)
 			
 			UPDATE folders

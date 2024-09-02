@@ -17,7 +17,7 @@ public class FileRepository : RepositoryBase, IFileRepository
 		const string query = """
 			SELECT EXISTS(
 				SELECT 1 FROM files
-				WHERE (name, extension, folder_id, user_id) = (@Name, @Extension, @FolderId, @UserId)
+				WHERE (name, extension, folder_id, user_id, is_trashed) = (@Name, @Extension, @FolderId, @UserId, false)
 			);
 			""";
 		

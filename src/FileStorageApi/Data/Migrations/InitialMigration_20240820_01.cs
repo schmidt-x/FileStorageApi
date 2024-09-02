@@ -22,28 +22,27 @@ public class InitialMigration_20240820_01 : Migration
 			CREATE TABLE IF NOT EXISTS paths (
 				id      UUID    PRIMARY KEY,
 				path    VARCHAR NOT NULL,
-				user_id UUID    NOT NULL,
+				user_id UUID    NOT NULL REFERENCES users(id),
 				
-				UNIQUE (path, user_id),
-				FOREIGN KEY (user_id) REFERENCES users(id)
+				UNIQUE (path, user_id)
 			);
 
 			CREATE TABLE IF NOT EXISTS folders (
 				id          UUID      PRIMARY KEY,
 				name        VARCHAR   NOT NULL,
-				path_id     UUID      NOT NULL,
+				path_id     UUID      NOT NULL REFERENCES paths(id),
 				size        INTEGER   NOT NULL,
 				is_trashed  BOOLEAN   NOT NULL,
 				created_at  TIMESTAMP NOT NULL,
 				modified_at TIMESTAMP NOT NULL,
 				parent_id   UUID      NOT NULL,
-				user_id     UUID      NOT NULL,
-					
-				UNIQUE (name, path_id, user_id),
-				FOREIGN KEY (path_id) REFERENCES paths(id),
-				FOREIGN KEY (user_id) REFERENCES users(id)
+				user_id     UUID      NOT NULL REFERENCES users(id)
 			);
-			
+
+			CREATE UNIQUE INDEX non_trashed_unique_folder
+			ON folders(name, path_id, user_id)
+			WHERE is_trashed = false;
+
 			CREATE TYPE filetype AS ENUM(
 				'Unknown',
 				'Image',
@@ -62,13 +61,13 @@ public class InitialMigration_20240820_01 : Migration
 				is_trashed  BOOLEAN   NOT NULL,
 				created_at  TIMESTAMP NOT NULL,
 				modified_at TIMESTAMP NOT NULL,
-				folder_id   UUID      NOT NULL,
-				user_id     UUID      NOT NULL,
-				
-				UNIQUE (name, extension, folder_id, user_id),
-				FOREIGN KEY (folder_id) REFERENCES folders(id),
-				FOREIGN KEY (user_id)   REFERENCES users(id)
+				folder_id   UUID      NOT NULL REFERENCES folders(id),
+				user_id     UUID      NOT NULL REFERENCES users(id)
 			);
+
+			CREATE UNIQUE INDEX non_trashed_unique_file
+			ON files(name, extension, folder_id, user_id)
+			WHERE is_trashed = false;
 			""";
 		
 		Execute.Sql(query);
