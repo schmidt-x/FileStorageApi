@@ -19,7 +19,7 @@ public class CreateFolderCommandValidator : AbstractValidator<CreateFolderComman
 			.Must(folderName => IsValidFolderFullNameLength(folderName, fullPathMaxLen))
 			.WithMessage($"FolderName's length exceeds the FullPathMaxLength limit of {fullPathMaxLen}" +
 			             " characters, leaving no characters for filename.")
-			.OverridePropertyName("FolderNameTooLong");
+			.OverridePropertyName("PathTooLong");
 	}
 	
 	private static bool IsValidFolderFullNameLength(string folderName, int maxLength)

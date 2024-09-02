@@ -85,12 +85,12 @@ public class FolderPathInfo
 	{
 		if (segment.ContainsControlChars())
 		{
-			return new InvalidPathException("Folder name contains Control characters.");
+			return new InvalidPathException("FolderName contains Control characters.");
 		}
 		
 		if (segment.Length > pathSegmentMaxLength)
 		{
-			return new InvalidPathException($"Folder name exceeds the limit of {pathSegmentMaxLength} characters.");
+			return new FolderNameTooLongException(pathSegmentMaxLength);
 		}
 		
 		return new FolderPathInfo("/", segment);
@@ -102,12 +102,12 @@ public class FolderPathInfo
 		{
 			if (segment.ContainsControlChars())
 			{
-				return new InvalidPathException("Folder name contains Control characters.");
+				return new InvalidPathException("FolderName contains Control characters.");
 			}
 			
 			if (segment.Length > pathSegmentMaxLength)
 			{
-				return new InvalidPathException($"Folder name exceeds the limit of {pathSegmentMaxLength} characters.");
+				return new FolderNameTooLongException(pathSegmentMaxLength);
 			}
 		}
 		
