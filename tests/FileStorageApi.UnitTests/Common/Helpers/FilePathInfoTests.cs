@@ -31,6 +31,17 @@ public class FilePathInfoTests
 	}
 	
 	[Theory]
+	[InlineData("image.jpg", "/image.jpg")]
+	[InlineData("New folder/image.jpg", "/New folder/image.jpg")]
+	public void MustGetValidFullName(string input, string expectedFullName)
+	{
+		var fileInfoResult = FilePathInfo.New(input);
+		
+		fileInfoResult.State.Should().Be(ResultState.Ok);
+		fileInfoResult.Value.FullName.Should().Be(expectedFullName);
+	}
+	
+	[Theory]
 	[InlineData("\x00image.jpg")]
 	[InlineData("image\t.jpg")]
 	[InlineData("image.jpg\x1F")]

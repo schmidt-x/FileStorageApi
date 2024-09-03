@@ -4,11 +4,11 @@ using File = FileStorageApi.Domain.Entities.File;
 using FileStorageApi.Features.Files.Exceptions;
 using FileStorageApi.Features.Files.Services;
 using FileStorageApi.Features.Infrastructure;
+using FileStorageApi.Features.Files.Helpers;
 using FileStorageApi.Common.Services;
 using FileStorageApi.Common.Helpers;
 using Microsoft.Extensions.Options;
 using FileStorageApi.Common.Options;
-using FileStorageApi.Domain.Enums;
 using System.Threading.Tasks;
 using FileStorageApi.Common;
 using FileStorageApi.Data;
@@ -57,44 +57,45 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			return new ValidationException(validationResult.Errors);
 		}
 		
-		var fileExt = Path.GetExtension(command.FileName).ToLower();
+		var rawFileName = Path.Join(command.Folder, command.FileName);
 		
-		var fileTypeResult = _fileSignature.Validate(command.File, fileExt, command.MimeType);
-		if (fileTypeResult.IsError(out var ex))
+		var fileInfoResult = FilePathInfo.New(rawFileName, _storageOpts.PathSegmentMaxLength);
+		if (fileInfoResult.IsError(out var ex))
 		{
 			return ex;
 		}
 		
-		FileType fileType = fileTypeResult.Value;
+		var fileInfo = fileInfoResult.Value;
+		var folderInfo = fileInfo.Folder;
 		
+		var fileTypeResult = _fileSignature.Validate(command.File, fileInfo.Extension, command.MimeType);
+		if (fileTypeResult.IsError(out ex))
+		{
+			return ex;
+		}
+		
+		var fileType = fileTypeResult.Value;
 		var rootFolderId = _user.FolderId();
 		
-		var size = await _db.Folders.GetSizeAsync(rootFolderId, ct);
-		if (size + command.File.Length > _storageOpts.StorageSizeLimitPerUser)
+		if (await NotEnoughSpace(rootFolderId, command.File.Length, ct))
 		{
 			return new StorageOutOfSpaceException();
 		}
 		
-		var folderInfoResult = FolderPathInfo.New(command.Folder, _storageOpts.PathSegmentMaxLength);
-		if (folderInfoResult.IsError(out ex))
-		{
-			return ex;
-		}
-		
-		FolderPathInfo folderInfo = folderInfoResult.Value;
 		var userId = _user.Id();
 		
-		var folderId = await _db.Folders.GetIdIfFolderExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct);
+		var folderId = folderInfo.IsRootFolder
+			? rootFolderId
+			: await _db.Folders.GetIdIfFolderExistsAsync(folderInfo.Path, folderInfo.Name, userId, ct);
+		
 		if (!folderId.HasValue)
 		{
 			return new FolderNotFoundException(folderInfo.FullName);
 		}
 		
-		var fileName = Path.GetFileNameWithoutExtension(command.FileName);
-		
-		if (await _db.Files.ExistsAsync(fileName, fileExt, folderId.Value, userId, ct))
+		if (await _db.Files.ExistsAsync(fileInfo.Name, fileInfo.Extension, folderId.Value, userId, ct))
 		{
-			return new DuplicateFileNameException(command.FileName);
+			return new DuplicateFileNameException(fileInfo.NameWithExtension);
 		}
 		
 		var timeNow = DateTimeOffset.UtcNow;
@@ -102,8 +103,8 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		var file = new File
 		{
 			Id = Guid.NewGuid(),
-			Name = fileName,
-			Extension = fileExt,
+			Name = fileInfo.Name,
+			Extension = fileInfo.Extension,
 			Size = command.File.Length,
 			Type = fileType,
 			IsTrashed = false,
@@ -113,9 +114,32 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			UserId = userId
 		};
 		
-		var fileId = file.Id.ToString();
-		var filePath = $@"{fileId[..2]}\{fileId[2..4]}";
+		await CreateFileAsync(file, command.File, rootFolderId, userId, ct);
 		
+		// TODO: encode fileName before displaying?
+		_logger.Information(
+			"User {userId} created new file: {fileName} (Id: {fileId}).", userId, fileInfo.NameWithExtension, file.Id);
+		
+		return new CreatedFile(
+			fileInfo.NameWithExtension,
+			folderInfo.FullName,
+			fileInfo.FullName,
+			file.Size,
+			file.CreatedAt);
+	}
+	
+	private async Task<bool> NotEnoughSpace(Guid folderId, long fileSize, CancellationToken ct)
+	{
+		var folderSize = await _db.Folders.GetSizeAsync(folderId, ct);
+		
+		return folderSize + fileSize > _storageOpts.StorageSizeLimitPerUser;
+	}
+	
+	private async Task CreateFileAsync(File fileEntity, Stream file, Guid rootFolderId, Guid userId, CancellationToken ct)
+	{
+		var fileId = fileEntity.Id.ToString();
+		
+		var filePath = FilePathGenerator.Generate(fileId);
 		var fileDirectoryPath = Path.Combine(_storageOpts.StorageFolder, rootFolderId.ToString(), filePath);
 		
 		if (!Directory.Exists(fileDirectoryPath))
@@ -127,7 +151,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		
 		await using (var fileStream = System.IO.File.Create(fileFullPath))
 		{
-			await command.File.CopyToAsync(fileStream, ct);
+			await file.CopyToAsync(fileStream, ct);
 		}
 		
 		bool duringTransaction = false;
@@ -137,8 +161,8 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			await _db.BeginTransactionAsync(ct);
 			
 			duringTransaction = true;
-			await _db.Files.CreateAsync(file, ct);
-			await _db.Folders.IncreaseSizeAsync(folderId.Value, file.Size, ct);
+			await _db.Files.CreateAsync(fileEntity, ct);
+			await _db.Folders.IncreaseSizeAsync(fileEntity.FolderId, fileEntity.Size, ct);
 			duringTransaction = false;
 			
 			await _db.SaveChangesAsync(ct);
@@ -151,16 +175,5 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			_logger.Error("Failed at creating file for user {userId}: {errorMessage}.", userId, exception.Message);
 			throw;
 		}
-		
-		// TODO: encode fileName before displaying?
-		_logger.Information(
-			"User {userId} created new file: {fileName} (Id: {fileId}).", userId, command.FileName, file.Id);
-		
-		return new CreatedFile(
-			command.FileName,
-			folderInfo.FullName,
-			$"{folderInfo.FullName}/{command.FileName}",
-			file.Size,
-			file.CreatedAt);
 	}
 }

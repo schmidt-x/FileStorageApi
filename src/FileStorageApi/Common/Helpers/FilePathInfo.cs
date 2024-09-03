@@ -10,6 +10,12 @@ public class FilePathInfo
 	public string Extension { get; }
 	public string NameWithExtension { get; }
 	
+	private string? _fullName;
+	
+	public string FullName => _fullName ??= Folder.IsRootFolder
+		? Folder.Name + NameWithExtension
+		: Folder.FullName + "/" + NameWithExtension;
+	
 	public FolderPathInfo Folder { get; }
 	
 	private FilePathInfo(string name, string? fileExtension, FolderPathInfo folderInfo)
