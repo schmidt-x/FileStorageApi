@@ -32,7 +32,10 @@ public class Files : EndpointGroupBase
 		
 		files
 			.MapGet("/info/{*fileName}", GetFile)
-			.WithName("GetFile");
+			.WithName("GetFile")
+			.Produces<FileDto>()
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
+			.Produces(StatusCodes.Status401Unauthorized);
 	}
 	
 	public async Task<IResult> CreateFile(
@@ -62,10 +65,21 @@ public class Files : EndpointGroupBase
 			}));
 	}
 	
-	public async Task<IResult> GetFile(string fileName)
+	public async Task<IResult> GetFile(
+		string fileName,
+		GetFileQueryHandler handler,
+		CancellationToken ct)
 	{
 		fileName = HttpUtility.UrlDecode(fileName);
+		var getFileResult = await handler.Handle(new GetFileQuery(fileName), ct);
 		
-		throw new NotImplementedException();
+		return getFileResult.Match(
+			Results.Ok,
+			ex => Results.BadRequest(ex switch
+			{
+				ValidationException vEx => new FailResponse(vEx.Errors),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
+				_                       => new FailResponse("Error", ex.Message)
+			}));
 	}
 }

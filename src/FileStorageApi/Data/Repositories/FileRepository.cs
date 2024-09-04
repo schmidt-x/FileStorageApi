@@ -44,4 +44,21 @@ public class FileRepository : RepositoryBase, IFileRepository
 		
 		await Connection.ExecuteAsync(new CommandDefinition(query, dParams, Transaction, cancellationToken: ct));
 	}
+	
+	public async Task<File?> GetFileIfExists(
+		string name, string extension, Guid folderId, Guid userId, CancellationToken ct)
+	{
+		const string query = """
+			SELECT * FROM files 
+			WHERE (name, extension, folder_id, user_id, is_trashed) = (@Name, @Extension, @FolderId, @UserId, false);
+			""";
+		
+		var command = new CommandDefinition(
+			query,
+			new { name, extension, folderId, userId },
+			Transaction,
+			cancellationToken: ct);
+		
+		return await Connection.QuerySingleOrDefaultAsync<File?>(command);
+	}
 }
