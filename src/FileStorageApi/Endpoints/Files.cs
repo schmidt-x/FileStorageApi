@@ -1,5 +1,4 @@
-﻿using System;
-using FileStorageApi.Features.Files.Commands.CreateFile;
+﻿using FileStorageApi.Features.Files.Commands.CreateFile;
 using FileStorageApi.Features.Files.Queries.GetFile;
 using FileStorageApi.Common.Exceptions;
 using FileStorageApi.Infrastructure;

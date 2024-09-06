@@ -1,3 +1,4 @@
+using FileStorageApi.Data.TypeHandlers;
 using System;
 using System.Reflection;
 using Dapper;
@@ -34,6 +35,7 @@ class Program
 		
 		builder.Services.AddNpgsql();
 		DefaultTypeMap.MatchNamesWithUnderscores = true;
+		SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
 		
 		builder.Services.AddScoped<IRepositoryContext, RepositoryContext>();
 		
