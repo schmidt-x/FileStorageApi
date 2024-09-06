@@ -105,7 +105,7 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			)
 			
 			UPDATE folders
-			SET size = size + @Size
+			SET size = size + @Size, modified_at = now() at time zone 'utc'
 			WHERE id IN (SELECT id FROM _folders);
 		""";
 		

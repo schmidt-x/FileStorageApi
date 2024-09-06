@@ -118,7 +118,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 		
 		// TODO: encode fileName before displaying?
 		_logger.Information(
-			"User {userId} created new file: {fileName} (Id: {fileId}).", userId, fileInfo.NameWithExtension, file.Id);
+			"User {userId} created new file: {fileName} (Id: {fileId}).", userId, fileInfo.FullName, file.Id);
 		
 		return new CreatedFile(
 			fileInfo.NameWithExtension,

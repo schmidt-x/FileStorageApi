@@ -31,7 +31,7 @@ public class InitialMigration_20240820_01 : Migration
 				id          UUID        PRIMARY KEY,
 				name        VARCHAR     NOT NULL,
 				path_id     UUID        NOT NULL REFERENCES paths(id),
-				size        INTEGER     NOT NULL,
+				size        BIGINT      NOT NULL,
 				is_trashed  BOOLEAN     NOT NULL,
 				created_at  TIMESTAMPTZ NOT NULL,
 				modified_at TIMESTAMPTZ NOT NULL,
@@ -56,7 +56,7 @@ public class InitialMigration_20240820_01 : Migration
 				id          UUID        PRIMARY KEY,
 				name        VARCHAR     NOT NULL,
 				extension   VARCHAR     NOT NULL,
-				size        INTEGER     NOT NULL,
+				size        BIGINT      NOT NULL,
 				type        filetype    NOT NULL,
 				is_trashed  BOOLEAN     NOT NULL,
 				created_at  TIMESTAMPTZ NOT NULL,
@@ -68,6 +68,8 @@ public class InitialMigration_20240820_01 : Migration
 			CREATE UNIQUE INDEX non_trashed_unique_file
 			ON files(name, extension, folder_id, user_id)
 			WHERE is_trashed = false;
+
+			CREATE TYPE itemtype AS ENUM('Folder', 'File')
 			""";
 		
 		Execute.Sql(query);
@@ -77,7 +79,7 @@ public class InitialMigration_20240820_01 : Migration
 	{
 		const string query = """
 			DROP TABLE IF EXISTS files, folders, paths, users;
-			DROP TYPE IF EXISTS filetype;
+			DROP TYPE IF EXISTS filetype, itemtype;
 			""";
 		
 		Execute.Sql(query);
