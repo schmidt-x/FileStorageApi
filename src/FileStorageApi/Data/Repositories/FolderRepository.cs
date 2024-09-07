@@ -22,6 +22,10 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		const string insertFolder = """
 			INSERT INTO folders (id, name, path_id, size, is_trashed, created_at, modified_at, parent_id, user_id)
 			VALUES (@Id, @Name, @PathId, @Size, @IsTrashed, @CreatedAt, @ModifiedAt, @ParentId, @UserId);
+
+			UPDATE folders
+			SET modified_at = @CreatedAt
+			WHERE id = @ParentId;
 			""";
 		
 		var parameters = new DynamicParameters(folder);
@@ -105,7 +109,7 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			)
 			
 			UPDATE folders
-			SET size = size + @Size, modified_at = now() at time zone 'utc'
+			SET size = size + @Size
 			WHERE id IN (SELECT id FROM _folders);
 		""";
 		

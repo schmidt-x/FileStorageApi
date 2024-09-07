@@ -34,7 +34,11 @@ public class FileRepository : RepositoryBase, IFileRepository
 	{
 		const string query = """
 			INSERT INTO files (id, name, extension, size, type, is_trashed, created_at, modified_at, folder_id, user_id)
-			VALUES (@Id, @Name, @Extension, @Size, @Type::filetype, @IsTrashed, @CreatedAt, @ModifiedAt, @FolderId, @UserId)
+			VALUES (@Id, @Name, @Extension, @Size, @Type::filetype, @IsTrashed, @CreatedAt, @ModifiedAt, @FolderId, @UserId);
+			
+			UPDATE folders
+			SET modified_at = @CreatedAt
+			WHERE id = @FolderId;
 			""";
 		
 		// Since Dapper does not support custom type handlers for Enums (https://github.com/DapperLib/Dapper/issues/259),
