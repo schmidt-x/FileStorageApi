@@ -46,8 +46,7 @@ class Program
 				opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter()))
 			.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(opts => 
 			opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-			
-			
+		
 		builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 		
 		builder.Services.AddCookieAuthentication();

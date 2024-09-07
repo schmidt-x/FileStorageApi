@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ValidationException = FileStorageApi.Common.Exceptions.ValidationException;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using FileStorageApi.Common.Exceptions;
+using FileStorageApi.Domain.Enums;
 using FileStorageApi.Features.Folders.Commands.CreateFolder;
+using FileStorageApi.Features.Folders.Queries.GetFolder;
 using FileStorageApi.Infrastructure;
 using FileStorageApi.Responses;
 using Microsoft.AspNetCore.Builder;
@@ -30,7 +32,10 @@ public class Folders : EndpointGroupBase
 		
 		folders
 			.MapGet("/{*folderName}", GetFolder)
-			.WithName("GetFolder");
+			.WithName("GetFolder")
+			.Produces<FolderDto>()
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
+			.Produces(StatusCodes.Status401Unauthorized);
 	}
 	
 	public async Task<IResult> CreateFolder(
@@ -55,10 +60,31 @@ public class Folders : EndpointGroupBase
 			}));
 	}
 	
-	public Task<IResult> GetFolder(string folderName)
+	public async Task<IResult> GetFolder(
+		[FromRoute] string? folderName,
+		[FromQuery] int? pageNumber,
+		[FromQuery] int? pageSize,
+		[FromQuery] ItemOrder? orderBy,
+		[FromQuery] bool? desc,
+		GetFolderQueryHandler handler,
+		CancellationToken ct)
 	{
 		folderName = HttpUtility.UrlDecode(folderName);
 		
-		throw new NotImplementedException();
+		var query = new GetFolderQuery(
+			folderName,
+			pageNumber ?? 1,
+			pageSize ?? 100,
+			orderBy ?? ItemOrder.Type,
+			desc ?? false);
+			
+		var getFolderResult = await handler.Handle(query, ct);
+		
+		return getFolderResult.Match<IResult>(
+			Results.Ok,
+			ex => Results.BadRequest(ex is KeyValueException kvEx
+				? new FailResponse(kvEx.Key, kvEx.Value)
+				: new FailResponse("Error", ex.Message))
+		);
 	}
 }
