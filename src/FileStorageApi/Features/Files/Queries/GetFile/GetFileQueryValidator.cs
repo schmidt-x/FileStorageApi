@@ -12,7 +12,7 @@ public class GetFileQueryValidator : AbstractValidator<GetFileQuery>
 		
 		RuleFor(x => x.FileName)
 			.NotEmpty()
-			.WithMessage("FileName is empty")
+			.WithMessage("FileName is empty.")
 			.OverridePropertyName("EmptyFileName");
 		
 		RuleFor(x => x.FileName)

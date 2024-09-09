@@ -4,7 +4,7 @@ public enum ItemOrder
 {
 	Type,
 	Name,
-	CreatedAt,
-	ModifiedAt,
+	DateCreated,
+	DateModified,
 	Size
 }

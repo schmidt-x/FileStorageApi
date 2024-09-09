@@ -1,4 +1,5 @@
 ﻿using FileStorageApi.Domain.Entities;
+using FileStorageApi.Data.Extensions;
 using FileStorageApi.Domain.Models;
 using FileStorageApi.Domain.Enums;
 using System.Collections.Generic;
@@ -130,17 +131,17 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 		CancellationToken ct)
 	{
 		string query = $"""
-			SELECT name, size, 'Folder'::itemtype AS type, created_at CreatedAt, modified_at ModifiedAt
+			SELECT name, size, 'Folder'::itemtype AS type, created_at, modified_at
 			FROM folders
 			WHERE parent_id = @FolderId
 			
 			UNION ALL
 			
-			SELECT name || extension, size, 'File'::itemtype as type, created_at CreatedAt, modified_at ModifiedAt
+			SELECT name || extension, size, 'File'::itemtype as type, created_at, modified_at
 			FROM files
 			WHERE folder_id = @FolderId
 			
-			ORDER BY {(orderBy ?? ItemOrder.Type).ToString()} {(desc ?? false ? "DESC" : "")}
+			ORDER BY {(orderBy ?? ItemOrder.Type).ToDbName()} {(desc ?? false ? "DESC" : "")}
 			LIMIT {(limit.HasValue ? limit.Value.ToString() : "ALL")} OFFSET {offset ?? 0};
 			""";
 		

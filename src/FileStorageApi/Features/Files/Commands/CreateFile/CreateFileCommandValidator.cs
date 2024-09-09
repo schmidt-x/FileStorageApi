@@ -1,5 +1,4 @@
-﻿using FileStorageApi.Common.Extensions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using FileStorageApi.Common.Options;
 using FluentValidation;
 
@@ -36,13 +35,8 @@ public class CreateFileCommandValidator : AbstractValidator<CreateFileCommand>
 			.OverridePropertyName("FileNameTooLong");
 		
 		RuleFor(x => x.FileName)
-			.Must(fileName => !fileName.ContainsControlChars())
-			.WithMessage("FileName contains Control characters.")
-			.OverridePropertyName("InvalidFileName");
-		
-		RuleFor(x => x.FileName)
 			.Must((command, fileName) => IsValidFullPathLength(fileName, command.Folder, fullPathMaxLen))
-			.WithMessage($"Path's total length exceeds the limit of {fullPathMaxLen} characters.")
+			.WithMessage($"Path's length exceeds the limit of {fullPathMaxLen} characters.")
 			.OverridePropertyName("PathTooLong");
 	}
 	
