@@ -1,4 +1,5 @@
-﻿using FileStorageApi.Features.Files.Commands.CreateFile;
+﻿using FileStorageApi.Features.Files.Queries.DownloadFile;
+using FileStorageApi.Features.Files.Commands.CreateFile;
 using FileStorageApi.Features.Files.Queries.GetFile;
 using FileStorageApi.Common.Exceptions;
 using FileStorageApi.Infrastructure;
@@ -16,23 +17,25 @@ public class Files : EndpointGroupBase
 {
 	public override void Map(WebApplication app)
 	{
-		var files = app
-			.MapGroup("/api/files")
+		var files = app.MapGroup("/api/files")
 			.WithTags("Files")
 			.DisableAntiforgery()    // TODO: remove
 			.RequireAuthorization();
 		
-		files
-			.MapPost("/", CreateFile)
+		files.MapPost("/", CreateFile)
 			.Produces<CreatedFile>(StatusCodes.Status201Created)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
 			.Produces(StatusCodes.Status401Unauthorized)
 			.Produces(StatusCodes.Status413PayloadTooLarge);
 		
-		files
-			.MapGet("/info/{*fileName}", GetFile)
-			.WithName("GetFile")
+		files.MapGet("/info/{*fileName}", GetFile)
+			.WithName(nameof(GetFile))
 			.Produces<FileDto>()
+			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
+			.Produces(StatusCodes.Status401Unauthorized);
+		
+		files.MapGet("/download/{*fileName}", DownloadFile)
+			.Produces(StatusCodes.Status200OK)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
 			.Produces(StatusCodes.Status401Unauthorized);
 	}
@@ -74,6 +77,25 @@ public class Files : EndpointGroupBase
 		
 		return getFileResult.Match(
 			Results.Ok,
+			ex => Results.BadRequest(ex switch
+			{
+				ValidationException vEx => new FailResponse(vEx.Errors),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
+				_                       => new FailResponse("Error", ex.Message)
+			}));
+	}
+	
+	public async Task<IResult> DownloadFile(
+		string fileName,
+		DownloadFileQueryHandler handler,
+		CancellationToken ct)
+	{
+		fileName = HttpUtility.UrlDecode(fileName);
+		
+		var downloadFileResult = await handler.Handle(new DownloadFileQuery(fileName), ct);
+		
+		return downloadFileResult.Match<IResult>(
+			file => Results.File(file.Stream, file.MimeType, file.Name),
 			ex => Results.BadRequest(ex switch
 			{
 				ValidationException vEx => new FailResponse(vEx.Errors),

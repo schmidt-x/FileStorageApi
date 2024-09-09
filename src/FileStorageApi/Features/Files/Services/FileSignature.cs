@@ -9,11 +9,11 @@ namespace FileStorageApi.Features.Files.Services;
 
 public class FileSignature : IFileSignature
 {
-	private record FileInfo(string MimeType, FileType FileType);
+	private record FileInfo(string MimeType, FileType FileType /*, TODO: FileSignature */);
 	
-	private static readonly Dictionary<string, FileInfo> FileExtensions = new()
+	private static readonly Dictionary<string, FileInfo> FileExtensions = new(StringComparer.OrdinalIgnoreCase)
 	{
-		{ "jpg",  new FileInfo("image/jpeg", FileType.Image /*, TODO: FileSignature */) },
+		{ "jpg",  new FileInfo("image/jpeg", FileType.Image) },
 		{ "jpeg", new FileInfo("image/jpeg", FileType.Image) },
 		{ "png",  new FileInfo("image/png", FileType.Image) },
 		{ "gif",  new FileInfo("image/gif", FileType.Image) },
@@ -72,7 +72,10 @@ public class FileSignature : IFileSignature
 			return fileType;
 		}
 		
-		ext = ext.Replace(".", "").ToLower();
+		if (ext.StartsWith('.'))
+		{
+			ext = ext[1..];
+		}
 		
 		if (!FileExtensions.TryGetValue(ext, out var fileInfo))
 		{
@@ -89,5 +92,21 @@ public class FileSignature : IFileSignature
 		fileType = fileInfo.FileType;
 		
 		return fileType;
+	}
+	
+	public string? GetMimeType(string extension)
+	{
+		if (string.IsNullOrEmpty(extension))
+		{
+			return null;
+		}
+		
+		if (extension.StartsWith('.'))
+		{
+			extension = extension[1..];
+		}
+		
+		_ = FileExtensions.TryGetValue(extension, out var value);
+		return value?.MimeType;
 	}
 }

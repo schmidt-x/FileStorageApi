@@ -7,4 +7,5 @@ namespace FileStorageApi.Features.Files.Services;
 public interface IFileSignature
 {
 	Result<FileType> Validate(Stream file, string ext, string mimeType);
+	string? GetMimeType(string extension);
 }
