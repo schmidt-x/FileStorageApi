@@ -102,7 +102,7 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			new CommandDefinition(query, new { path, userId }, Transaction, cancellationToken: ct));
 	}
 	
-	public async Task IncreaseSizeAsync(Guid folderId, long size, CancellationToken ct)
+	public async Task IncreaseSizeAsync(Guid folderId, long size, Guid? upToId, CancellationToken ct)
 	{
 		const string query = """
 			WITH RECURSIVE _folders AS (
@@ -116,6 +116,8 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			SET size = size + @Size
 			WHERE id IN (SELECT id FROM _folders);
 		""";
+		
+		
 		
 		var command = new CommandDefinition(query, new { folderId, size }, Transaction, cancellationToken: ct);
 		

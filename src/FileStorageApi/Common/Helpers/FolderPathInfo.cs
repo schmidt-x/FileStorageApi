@@ -5,7 +5,7 @@ using System;
 
 namespace FileStorageApi.Common.Helpers;
 
-public class FolderPathInfo
+public class FolderPathInfo : IEquatable<FolderPathInfo>
 {
 	public string Path { get; }
 	public string Name { get; }
@@ -115,5 +115,71 @@ public class FolderPathInfo
 		var name = segments[^1];
 		
 		return new FolderPathInfo(path, name);
+	}
+	
+	
+	public bool Equals(FolderPathInfo? other)
+	{
+		if (ReferenceEquals(null, other)) return false;
+		if (ReferenceEquals(this, other)) return true;
+		
+		return IsRootFolder && other.IsRootFolder || FullName.Equals(other.FullName, StringComparison.Ordinal);
+	}
+	
+	public override bool Equals(object? obj) => obj is FolderPathInfo other && Equals(other);
+	
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(FullName);
+	}
+	
+	public FolderPathInfo FindLCA(FolderPathInfo other)
+	{
+		if (IsRootFolder) return this;
+		if (other.IsRootFolder) return other;
+		
+		int minLength;
+		string left;
+		string right;
+		bool isLeft;
+		
+		if (FullName.Length <= other.FullName.Length)
+		{
+			left = FullName;
+			right = other.FullName;
+			minLength = left.Length;
+			isLeft = true;
+		}
+		else
+		{
+			left = other.FullName;
+			right = FullName;
+			minLength = left.Length;
+			isLeft = false;
+		}
+		
+		int i = 0, j = 0;
+		while (i < minLength)
+		{
+			var ch = left[i];
+			
+			if (ch != right[i]) break;
+			
+			if (i == minLength-1) return isLeft ? this : other;
+			
+			if (ch == '/') j = i;
+			i++;
+		}
+		
+		if (j == 0) return new FolderPathInfo(RootFolderPath, RootFolderName);
+		
+		var res = FullName.AsSpan()[..j];
+		
+		var index = res.LastIndexOf('/') + 1;
+		
+		var path = res[..index];
+		var name = res[index..];
+		
+		return new FolderPathInfo(path.ToString(), name.ToString());
 	}
 }

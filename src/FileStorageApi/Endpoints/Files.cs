@@ -1,4 +1,5 @@
-﻿using FileStorageApi.Features.Files.Queries.DownloadFile;
+﻿using System;
+using FileStorageApi.Features.Files.Queries.DownloadFile;
 using FileStorageApi.Features.Files.Commands.CreateFile;
 using FileStorageApi.Features.Files.Queries.GetFile;
 using FileStorageApi.Common.Exceptions;
@@ -10,6 +11,7 @@ using FileStorageApi.Responses;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Web;
+using FileStorageApi.Features.Files.Commands.RenameFile;
 
 namespace FileStorageApi.Endpoints;
 
@@ -38,6 +40,10 @@ public class Files : EndpointGroupBase
 			.Produces(StatusCodes.Status200OK)
 			.Produces<FailResponse>(StatusCodes.Status400BadRequest)
 			.Produces(StatusCodes.Status401Unauthorized);
+		
+		// files.MapPatch("/move/{*fileName}", MoveFile)
+		files.MapPut("/move/{*fileName}", MoveFile)
+			;
 	}
 	
 	public async Task<IResult> CreateFile(
@@ -96,6 +102,28 @@ public class Files : EndpointGroupBase
 		
 		return downloadFileResult.Match<IResult>(
 			file => Results.File(file.Stream, file.MimeType, file.Name),
+			ex => Results.BadRequest(ex switch
+			{
+				ValidationException vEx => new FailResponse(vEx.Errors),
+				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
+				_                       => new FailResponse("Error", ex.Message)
+			}));
+	}
+	
+	public async Task<IResult> MoveFile(
+		string fileName,
+		[FromForm] string destFileName,
+		MoveFileCommandHandler handler,
+		CancellationToken ct)
+	{
+		fileName = HttpUtility.UrlDecode(fileName);
+		
+		var command = new MoveFileCommand(fileName, destFileName);
+		
+		var moveFileResult = await handler.Handle(command, ct);
+		
+		return moveFileResult.Match<IResult>(
+			Results.Ok,
 			ex => Results.BadRequest(ex switch
 			{
 				ValidationException vEx => new FailResponse(vEx.Errors),

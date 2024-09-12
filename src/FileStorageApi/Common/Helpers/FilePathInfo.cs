@@ -67,6 +67,9 @@ public class FilePathInfo
 		return new FilePathInfo(name.ToString(), ext, folderInfoResult.Value);
 	}
 	
+	public bool NameEquals(FilePathInfo other)
+		=> NameWithExtension.Equals(other.NameWithExtension, StringComparison.Ordinal);
+	
 	private static bool FileNameHasExtension(ReadOnlySpan<char> fileName, out int index)
 	{
 		var dotIndex = fileName.LastIndexOf('.');

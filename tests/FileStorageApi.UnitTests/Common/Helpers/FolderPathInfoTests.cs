@@ -112,4 +112,47 @@ public class FolderPathInfoTests
 		// Assert
 		folder.IsRootFolder.Should().Be(isRoot);
 	}
+	
+	[Theory]
+	[InlineData("/", "/", "", "/")]
+	[InlineData("/FolderA", "/FolderB", "", "/")]
+	[InlineData("/FolderA", "/FolderA", "/", "FolderA")]
+	[InlineData("/FolderA", "/FolderA/FolderB", "/", "FolderA")]
+	[InlineData("/FolderA/FolderB", "/FolderA", "/", "FolderA")]
+	[InlineData("/FolderA/FolderB", "/FolderA/FolderC", "/", "FolderA")]
+	[InlineData("/FolderA/FolderB/FolderC", "/FolderA/FolderB/FolderD", "/FolderA/", "FolderB")]
+	public void MustGetValidLowestCommonAncestor(
+		string left, string right, string expectedLcaPath, string expectedLcaName)
+	{
+		// Arrange
+		var leftFileInfo = FolderPathInfo.New(left).Value;
+		var rightFileInfo = FolderPathInfo.New(right).Value;
+		
+		// Act
+		var lca = leftFileInfo.FindLCA(rightFileInfo);
+		
+		// Assert
+		lca.Path.Should().BeEquivalentTo(expectedLcaPath);
+		lca.Name.Should().BeEquivalentTo(expectedLcaName);
+	}
+	
+	[Theory]
+	[InlineData("/FolderA", "/FolderA", true, true)]
+	[InlineData("/FolderA/FolderB", "/FolderA", true, false)]
+	[InlineData("/", "/FolderA", true, true)]
+	[InlineData("/FolderA", "/", true, false)]
+	[InlineData("/FolderA", "/FolderB", false, false)]
+	[InlineData("/FolderA", "/FolderB", false, true)]
+	public void MustOrMustNotReturnTheSameLCAObject(string left, string right, bool isRefEqual, bool compareLeft)
+	{
+		// Arrange
+		var leftInfo = FolderPathInfo.New(left).Value;
+		var rightInfo = FolderPathInfo.New(right).Value;
+		
+		// Act
+		var lca = leftInfo.FindLCA(rightInfo);
+		
+		// Assert
+		ReferenceEquals(lca, compareLeft ? leftInfo : rightInfo).Should().Be(isRefEqual);
+	}
 }

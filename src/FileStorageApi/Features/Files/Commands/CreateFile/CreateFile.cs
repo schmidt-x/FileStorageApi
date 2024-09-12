@@ -162,7 +162,7 @@ public class CreateFileCommandHandler : RequestHandlerBase
 			
 			duringTransaction = true;
 			await _db.Files.CreateAsync(fileEntity, ct);
-			await _db.Folders.IncreaseSizeAsync(fileEntity.FolderId, fileEntity.Size, ct);
+			await _db.Folders.IncreaseSizeAsync(fileEntity.FolderId, fileEntity.Size, null, ct);
 			duringTransaction = false;
 			
 			await _db.SaveChangesAsync(ct);
