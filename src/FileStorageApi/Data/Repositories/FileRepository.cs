@@ -78,5 +78,14 @@ public class FileRepository : RepositoryBase, IFileRepository
 			query, new { name, extension, folderId, userId }, Transaction, cancellationToken: ct);
 		
 		return await Connection.QuerySingleOrDefaultAsync<Guid?>(command);
-	}	
+	}
+	
+	public async Task<int> GetExtensionLengthAsync(Guid fileId, CancellationToken ct)
+	{
+		const string query = "SELECT length(extension) FROM files WHERE (id, is_trashed) = (@FileId, false)";
+		
+		var command = new CommandDefinition(query, new { fileId }, Transaction, cancellationToken: ct);
+		
+		return await Connection.ExecuteScalarAsync<int>(command);
+	}
 }
