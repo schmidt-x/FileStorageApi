@@ -102,9 +102,18 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			new CommandDefinition(query, new { path, userId }, Transaction, cancellationToken: ct));
 	}
 	
-	public async Task IncreaseSizeAsync(Guid folderId, long size, CancellationToken ct)
+	public Task DecreaseSizeAsync(Guid folderId, long size, Guid? upToFolderId, CancellationToken ct)
 	{
-		const string query = """
+		return IncreaseSizeAsync(folderId, -size, upToFolderId, ct);
+	}
+	
+	public async Task IncreaseSizeAsync(Guid folderId, long size, Guid? upToFolderId, CancellationToken ct)
+	{
+		string whereClause = upToFolderId.HasValue
+			? "id <> @UpToFolderId AND id IN (SELECT id FROM _folders);"
+			: "id IN (SELECT id FROM _folders);";
+		
+		string query = $"""
 			WITH RECURSIVE _folders AS (
 				SELECT id, parent_id FROM folders WHERE id = @FolderId
 				UNION ALL
@@ -114,21 +123,17 @@ public class FolderRepository : RepositoryBase, IFolderRepository
 			
 			UPDATE folders
 			SET size = size + @Size
-			WHERE id IN (SELECT id FROM _folders);
-		""";
+			WHERE {whereClause}
+			""";
 		
-		var command = new CommandDefinition(query, new { folderId, size }, Transaction, cancellationToken: ct);
+		var command = new CommandDefinition(
+			query, new { folderId, size, upToFolderId }, Transaction, cancellationToken: ct);
 		
 		await Connection.ExecuteAsync(command);
 	}
 	
 	public async Task<List<Item>> GetItemsAsync(
-		Guid folderId,
-		int? limit,
-		int? offset,
-		ItemOrder? orderBy,
-		bool? desc,
-		CancellationToken ct)
+		Guid folderId, int? limit, int? offset, ItemOrder? orderBy, bool? desc, CancellationToken ct)
 	{
 		string query = $"""
 			SELECT name, size, 'Folder'::itemtype AS type, created_at, modified_at
