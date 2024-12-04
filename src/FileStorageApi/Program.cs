@@ -45,7 +45,7 @@ class Program
 			.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
 				opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter()))
 			.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(opts => 
-			opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+				opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 		
 		builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 		

@@ -16,7 +16,7 @@ public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 			.Matches("[a-z]")
 			.Matches("[A-Z]")
 			.Matches(@"\d")
-			.Matches(@"[^\w\s]")
+			.Matches(@"[^a-zA-Z0-9\s]")
 			.Matches(@"^\S*$");
 	}
 }

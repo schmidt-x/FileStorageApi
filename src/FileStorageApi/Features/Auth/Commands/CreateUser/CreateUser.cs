@@ -13,7 +13,7 @@ using System.Threading;
 using Serilog;
 using System;
 using FileStorageApi.Domain.Constants;
-using FileStorageApi.Features.Auth.Exceptions;
+using static FileStorageApi.Domain.Constants.ErrorCodes;
 using FluentValidation;
 
 namespace FileStorageApi.Features.Auth.Commands.CreateUser;
@@ -55,12 +55,14 @@ public class CreateUserCommandHandler : RequestHandlerBase
 		
 		if (await _db.Users.EmailExists(request.Email, ct))
 		{
-			return new DuplicateEmailException(request.Email);
+			return new ValidationException(
+				DUPLICATE_VALUE, nameof(request.Email), $"Email address '{request.Email}' is already taken.");
 		}
 		
 		if (await _db.Users.UsernameExists(request.Username, ct))
 		{
-			return new DuplicateUsernameException(request.Username);
+			return new ValidationException(
+				DUPLICATE_VALUE, nameof(request.Username), $"Username '{request.Username}' is already taken.");
 		}
 		
 		var timeNow = DateTimeOffset.UtcNow;

@@ -1,21 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using FileStorageApi.Common.Models;
+using System.Collections.Generic;
 
 namespace FileStorageApi.Responses;
 
 public class FailResponse
 {
-	public FailResponse(IDictionary<string, string[]> errors)
-	{
-		Errors = errors;
-	}
+	public IList<ErrorDetail> Errors { get; }
 	
-	public FailResponse(string key, string[] errors)
-		: this(new Dictionary<string, string[]> { { key, errors } })
-	{	}
-	
-	public FailResponse(string key, string error)
-		: this(new Dictionary<string, string[]> { { key, [error] } })
-	{	}
-	
-	public IDictionary<string, string[]> Errors { get; }
+	public FailResponse(IList<ErrorDetail> errors) => Errors = errors;
+
+	public FailResponse(ErrorDetail error) : this([ error ])
+	{ }
 }

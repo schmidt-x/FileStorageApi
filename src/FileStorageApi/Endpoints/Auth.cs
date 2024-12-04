@@ -13,6 +13,7 @@ using FileStorageApi.Responses;
 using FileStorageApi.Common;
 using System;
 using System.Security.Authentication;
+using FileStorageApi.Common.Models;
 
 namespace FileStorageApi.Endpoints;
 
@@ -28,12 +29,12 @@ public class Auth : EndpointGroupBase
 		auth
 			.MapPost("/register", RegisterAsync)
 			.Produces(StatusCodes.Status201Created)
-			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
+			.Produces<FailResponse>(StatusCodes.Status422UnprocessableEntity);
 		
 		auth
 			.MapPost("/login", LoginAsync)
 			.Produces(StatusCodes.Status200OK)
-			.Produces<FailResponse>(StatusCodes.Status400BadRequest);
+			.Produces<FailResponse>(StatusCodes.Status422UnprocessableEntity);
 	}
 	
 	public async Task<IResult> RegisterAsync(
@@ -44,18 +45,13 @@ public class Auth : EndpointGroupBase
 		HttpResponse response,
 		CancellationToken ct)
 	{
-		var command = new CreateUserCommand(email, username, password);
-		
-		Result<ClaimsPrincipal> result = await handler.Handle(command, ct);
+		Result<ClaimsPrincipal> result = await handler.Handle(new CreateUserCommand(email, username, password), ct);
 		
 		if (result.IsError(out Exception? ex))
 		{
-			return Results.BadRequest(ex switch
-			{
-				ValidationException vEx => new FailResponse(vEx.Errors),
-				KeyValueException kvEx  => new FailResponse(kvEx.Key, kvEx.Value),
-				_                       => new FailResponse("Error", ex.Message)
-			});
+			return Results.UnprocessableEntity(ex is ValidationException vEx
+				? new FailResponse(vEx.Errors)
+				: throw ex);
 		}
 		
 		response.StatusCode = StatusCodes.Status201Created;
@@ -69,15 +65,13 @@ public class Auth : EndpointGroupBase
 		HttpResponse response,
 		CancellationToken ct)
 	{
-		var command = new LoginUserCommand(login, password);
-		
-		Result<ClaimsPrincipal> result = await handler.Handle(command, ct);
+		Result<ClaimsPrincipal> result = await handler.Handle(new LoginUserCommand(login, password), ct);
 		
 		if (result.IsError(out Exception? ex))
 		{
-			return Results.BadRequest(ex is AuthenticationException
-				? new FailResponse("InvalidCredentials", "Login or password is incorrect.")
-				: new FailResponse("Error", ex.Message));
+			return Results.UnprocessableEntity(ex is AuthenticationException
+				? new FailResponse(ErrorDetails.AuthFailure)
+				: throw ex);
 		}
 		
 		response.StatusCode = StatusCodes.Status200OK;

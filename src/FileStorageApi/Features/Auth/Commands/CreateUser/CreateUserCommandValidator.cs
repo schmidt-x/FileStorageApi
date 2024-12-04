@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using static FileStorageApi.Domain.Constants.ErrorCodes;
+using System.Text.RegularExpressions;
 using FileStorageApi.Common.Options;
 using Microsoft.Extensions.Options;
 using FluentValidation;
@@ -12,64 +13,68 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 		var authOpts = authOptions.Value;
 		
 		RuleFor(x => x.Email)
-			.NotEmpty().WithMessage("Empty email address.")
-			.OverridePropertyName("EmptyEmail");
+			.NotEmpty()
+			.WithName(EMPTY_VALUE)
+			.WithMessage("Email address is required.");
 		
 		RuleFor(x => x.Email)
-			.EmailAddress().WithMessage("Invalid email address.")
-			.OverridePropertyName("InvalidEmail");
+			.EmailAddress()
+			.WithName(INVALID_VALUE)
+			.WithMessage("Invalid email address.");
 		
 		RuleFor(x => x.Username)
-			.NotEmpty().WithMessage("Username is empty.")
-			.OverridePropertyName("EmptyUsername");
+			.NotEmpty()
+			.WithName(EMPTY_VALUE)
+			.WithMessage("Username is required.");
 		
 		RuleFor(x => x.Username)
 			.MinimumLength(authOpts.UsernameMinLength)
-			.WithMessage($"Minimum length is {authOpts.UsernameMinLength} characters.")
-			.OverridePropertyName("UsernameTooShort");
+			.WithName(LENGTH_BELOW_MINIMUM)
+			.WithMessage($"Minimum length is {authOpts.UsernameMinLength} characters.");
 		
 		RuleFor(x => x.Username)
 			.MaximumLength(authOpts.UsernameMaxLength)
-			.WithMessage($"Maximum length is {authOpts.UsernameMaxLength} characters.")
-			.OverridePropertyName("UsernameTooLong");
-			
+			.WithName(LENGTH_EXCEEDS_LIMIT)
+			.WithMessage($"Maximum length is {authOpts.UsernameMaxLength} characters.");
+		
 		RuleFor(x => x.Username)
 			.Matches(@"^[a-zA-Z\d_.]+$", RegexOptions.Compiled)
-			.WithMessage("Username can only contain letters, numbers, underscores, or periods.")
-			.OverridePropertyName("InvalidUsername");
+			.WithName(INVALID_VALUE)
+			.WithMessage("Username can only contain letters, numbers, underscores, or periods.");
 		
 		RuleFor(x => x.Password)
-			.NotEmpty().WithMessage("Password is empty.")
-			.OverridePropertyName("EmptyPassword");
+			.NotEmpty()
+			.WithName(EMPTY_VALUE)
+			.WithMessage("Password is required.");
 		
 		RuleFor(x => x.Password)
 			.MinimumLength(authOpts.PasswordMinLength)
-			.WithMessage($"Minimum length for password is {authOpts.PasswordMinLength} characters.")
-			.OverridePropertyName("PasswordTooShort");
+			.WithName(LENGTH_BELOW_MINIMUM)
+			.WithMessage($"Minimum length for password is {authOpts.PasswordMinLength} characters.");
 		
 		RuleFor(x => x.Password)
 			.Matches(@"\d", RegexOptions.Compiled)
-			.WithMessage("Password must have at least one digit ('0'-'9').")
-			.OverridePropertyName("NoDigitInPassword");
+			.WithName(VALUE_MISSING_DIGIT)
+			.WithMessage("Password must have at least one digit ('0'-'9').");
 		
 		RuleFor(x => x.Password)
 			.Matches("[A-Z]", RegexOptions.Compiled)
-			.WithMessage("Password must have at least one uppercase ('A'-'Z').")
-			.OverridePropertyName("NoUpperInPassword");
+			.WithName(VALUE_MISSING_UPPERCASE)
+			.WithMessage("Password must have at least one uppercase ('A'-'Z').");
 		
 		RuleFor(x => x.Password)
 			.Matches("[a-z]", RegexOptions.Compiled)
-			.WithMessage("Password must have at least one lowercase ('a'-'z').")
-			.OverridePropertyName("NoLowerInPassword");
+			.WithName(VALUE_MISSING_LOWERCASE)
+			.WithMessage("Password must have at least one lowercase ('a'-'z').");
 		
 		RuleFor(x => x.Password)
-			.Matches(@"[^\w\s]", RegexOptions.Compiled)
-			.WithMessage("Password must have at least one non-alphanumeric character.")
-			.OverridePropertyName("NoSymbolInPassword");
+			.Matches(@"[^a-zA-Z0-9\s]", RegexOptions.Compiled)
+			.WithName(VALUE_MISSING_SYMBOL)
+			.WithMessage("Password must have at least one non-alphanumeric character.");
 		
 		RuleFor(x => x.Password)
 			.Matches(@"^\S*$", RegexOptions.Compiled)
-			.WithMessage("Password must not have any whitespaces.")
-			.OverridePropertyName("WhitespaceInPassword");
+			.WithName(INVALID_VALUE)
+			.WithMessage("Password must not have any whitespaces.");
 	}
 }

@@ -40,7 +40,6 @@ public class LoginUserCommandHandler : RequestHandlerBase
 	public async Task<Result<ClaimsPrincipal>> Handle(LoginUserCommand request, CancellationToken ct)
 	{
 		var validationResult = _validator.Validate(request);
-		
 		if (!validationResult.IsValid)
 		{
 			return new AuthenticationException();
